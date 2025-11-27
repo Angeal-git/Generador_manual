@@ -1,0 +1,210 @@
+.viewer {
+    animation: fadeIn 0.6s ease;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.header h1 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.section {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.section:hover {
+    border-color: var(--color-border-light);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Project Info */
+.projectInfo {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.projectInfo h2 {
+    margin-bottom: var(--spacing-md);
+}
+
+.dimensions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.dimensionCard {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.dimensionCard:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.dimensionLabel {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-xs);
+}
+
+.dimensionValue {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.metadata {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+/* Components Grid */
+.componentsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .componentsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .dimensions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Consumables */
+.consumablesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.consumableCard {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all var(--transition-base);
+}
+
+.consumableCard:hover {
+    border-color: var(--color-primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.consumableHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.consumableIcon {
+    font-size: 1.5rem;
+}
+
+.consumableHeader h3 {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.consumableDetails {
+    margin-top: var(--spacing-sm);
+}
+
+.consumableQuantity {
+    font-size: 1.25rem;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.consumableQuantity strong {
+    font-weight: 700;
+}
+
+/* Assembly Sequence */
+.assemblyList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.assemblyStep {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all var(--transition-base);
+}
+
+.assemblyStep:hover {
+    border-color: var(--color-primary);
+    transform: translateX(4px);
+}
+
+.stepNumber {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.assemblyStep p {
+    margin: 0;
+    padding-top: 6px;
+}
+
+/* Notes */
+.notesList {
+    list-style: none;
+    padding: 0;
+}
+
+.notesList li {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--color-bg-primary);
+    border-left: 3px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+}
+
+.notesList li:last-child {
+    margin-bottom: 0;
+}
