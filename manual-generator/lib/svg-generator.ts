@@ -75,9 +75,9 @@ function formatMeasurement(mm: number): string {
 
 export function generateSVG(component: Component): string {
   // Get real component dimensions in mm
-  const realWidthMm = (component.dimensiones.ancho || 100) * 10;
-  const realHeightMm = (component.dimensiones.alto || component.dimensiones.largo || 100) * 10;
-  const realDepthMm = (component.dimensiones.largo || 0) * 10;
+  // We strictly use 'largo' (length) and 'alto' (height) for the 2D profile as requested
+  const realWidthMm = (component.dimensiones.largo || 100) * 10;
+  const realHeightMm = (component.dimensiones.alto || 100) * 10;
 
   // Calculate scaling to fit within SVG canvas (leaving padding)
   // We want to simulate the piece being cut from a larger sheet, so we align it to top-left
@@ -120,17 +120,81 @@ export function generateSVG(component: Component): string {
     </pattern>
   </defs>`;
 
-  let pieceElements = `
-  <!-- Main piece with pattern fill -->
-  <rect x="${startX}" y="${startY}" width="${drawWidth}" height="${drawHeight}" 
-        fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3"/>`;
+  let pieceElements = '';
 
-  // Add internal divisions if the piece has depth
-  if (realDepthMm > 0 && realDepthMm !== realHeightMm) {
-    const divisionY = startY + (drawHeight / 2);
-    pieceElements += `
-  <line x1="${startX}" y1="${divisionY}" x2="${startX + drawWidth}" y2="${divisionY}" 
-        stroke="#000000" stroke-width="2" stroke-dasharray="5,5"/>`;
+  const forma = component.dimensiones.forma || 'rectangulo';
+
+  switch (forma) {
+    case 'circulo':
+      // Use largo/alto as diameter/bounding box
+      const rx = drawWidth / 2;
+      const ry = drawHeight / 2;
+      const cx = startX + rx;
+      const cy = startY + ry;
+      pieceElements = `
+      <!-- Circle/Ellipse -->
+      <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" 
+            fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3"/>`;
+      break;
+
+    case 'triangulo':
+      // Triangle (isosceles pointing up by default)
+      const p1 = `${startX + drawWidth / 2},${startY}`; // Top center
+      const p2 = `${startX},${startY + drawHeight}`; // Bottom left
+      const p3 = `${startX + drawWidth},${startY + drawHeight}`; // Bottom right
+      pieceElements = `
+      <!-- Triangle -->
+      <polygon points="${p1} ${p2} ${p3}" 
+            fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3"/>`;
+      break;
+
+    case 'L':
+      // L-shape (simple approximation)
+      // Assume 1/3 thickness for the arms
+      const thickX = drawWidth / 3;
+      const thickY = drawHeight / 3;
+      const lPoints = `
+        ${startX},${startY} 
+        ${startX + thickX},${startY} 
+        ${startX + thickX},${startY + drawHeight - thickY} 
+        ${startX + drawWidth},${startY + drawHeight - thickY} 
+        ${startX + drawWidth},${startY + drawHeight} 
+        ${startX},${startY + drawHeight}
+      `;
+      pieceElements = `
+      <!-- L-Shape -->
+      <polygon points="${lPoints.trim().replace(/\s+/g, ' ')}" 
+            fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3"/>`;
+      break;
+
+    case 'irregular':
+      if (component.svgPath) {
+        // Use provided path, scaled to fit the box
+        // We wrap it in a group with transform to scale it
+        // Assuming path is defined in 0-100 coordinate space as requested from AI
+        pieceElements = `
+        <!-- Irregular Shape from Path -->
+        <g transform="translate(${startX}, ${startY}) scale(${drawWidth / 100}, ${drawHeight / 100})">
+          <path d="${component.svgPath}" fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3" vector-effect="non-scaling-stroke"/>
+        </g>`;
+      } else {
+        // Fallback to rectangle with "Irregular" text
+        pieceElements = `
+        <!-- Irregular Shape Fallback -->
+        <rect x="${startX}" y="${startY}" width="${drawWidth}" height="${drawHeight}" 
+              fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3" stroke-dasharray="10,5"/>
+        <text x="${startX + drawWidth / 2}" y="${startY + drawHeight / 2}" 
+              font-family="Arial" font-size="24" fill="#000000" text-anchor="middle" dominant-baseline="middle">FORMA IRREGULAR</text>`;
+      }
+      break;
+
+    case 'rectangulo':
+    default:
+      pieceElements = `
+      <!-- Rectangle -->
+      <rect x="${startX}" y="${startY}" width="${drawWidth}" height="${drawHeight}" 
+            fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3"/>`;
+      break;
   }
 
   // Dimension lines (using draw coordinates but REAL measurements formatted in cm/m)

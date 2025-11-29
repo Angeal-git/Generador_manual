@@ -46,18 +46,27 @@ ${imageCount > 1 ? '**NOTA:** Se proporcionan múltiples vistas del proyecto. An
 
 4. **CALCULA CANTIDADES DE MATERIAL** necesarias (m², metros lineales, piezas, etc.)
 
-5. **IDENTIFICA CONSUMIBLES** necesarios:
+5. **IDENTIFICA LA FORMA GEOMÉTRICA** de cada componente:
+   - 'rectangulo': Para formas rectangulares o cuadradas.
+   - 'circulo': Para formas circulares o elípticas.
+   - 'triangulo': Para formas triangulares.
+   - 'L': Para formas en L.
+   - 'irregular': Para formas complejas que no encajan en las anteriores.
+
+6. **PARA FORMAS IRREGULARES**, intenta proporcionar una descripción simplificada del path SVG (atributo 'd') si es posible, asumiendo un viewBox de 0 0 100 100.
+
+7. **IDENTIFICA CONSUMIBLES** necesarios:
    - Iluminación (tipo, cantidad de metros de tira LED, watts, etc.)
    - Pintura (tipo, color, litros necesarios)
    - Adhesivos y pegamentos
    - Tornillería y herrajes
    - Vinilos (impreso o de corte, m²)
 
-6. **DETERMINA QUÉ PIEZAS NECESITAN ARCHIVOS VECTORIALES** para corte CNC, láser o plóter (logos, letras, formas complejas)
+8. **DETERMINA QUÉ PIEZAS NECESITAN ARCHIVOS VECTORIALES** para corte CNC, láser o plóter (logos, letras, formas complejas)
 
-7. **PROPORCIONA NOTAS DE FABRICACIÓN** para cada componente (procesos necesarios, acabados, ensamblaje)
+9. **PROPORCIONA NOTAS DE FABRICACIÓN** para cada componente (procesos necesarios, acabados, ensamblaje)
 
-8. **SUGIERE UNA SECUENCIA DE ENSAMBLAJE** lógica
+10. **SUGIERE UNA SECUENCIA DE ENSAMBLAJE** lógica
 
 **IMPORTANTE:**
 - IGNORA completamente la creación de muebles (sillas, mesas, sofás, etc.) a menos que sean parte estructural del display.
@@ -81,8 +90,10 @@ Responde ÚNICAMENTE con un objeto JSON válido (sin markdown, sin \`\`\`json) c
         "largo": 100,
         "ancho": 50,
         "alto": 200,
-        "unidad": "cm"
+        "unidad": "cm",
+        "forma": "rectangulo"
       },
+      "svgPath": "M10 10 H 90 V 90 H 10 Z", // Solo si es irregular
       "material": {
         "tipo": "MDF 15mm",
         "especificaciones": "MDF de 15mm de espesor, acabado liso",

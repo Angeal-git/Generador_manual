@@ -2,7 +2,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableCell, TableRow, WidthType, BorderStyle, ImageRun, ShadingType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableCell, TableRow, WidthType, BorderStyle, ImageRun, ShadingType, Header, Footer, PageNumber } from 'docx';
 import { ProductionManual } from './types';
 
 // Extend jsPDF type to include autoTable
@@ -102,19 +102,53 @@ function drawSidebar(doc: jsPDF, pageHeight: number, projectName: string) {
     doc.setFont('helvetica', 'bold');
 
     // Save context, rotate, draw text, restore context
-    // The rotation is around the point (0,0) by default, so we need to translate first
-    // We want the text to start near the bottom and go up
     doc.saveGraphicsState();
 
     // Position for "PLANEACION DEL TRABAJO"
     doc.text('PLANEACION DEL TRABAJO', 18, pageHeight - 40, { angle: 90 });
 
-    // Position for Project Name
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'normal');
-    // doc.text(`| ${cleanText(projectName)}`, 18, pageHeight - 160, { angle: 90 });
-
     doc.restoreGraphicsState();
+}
+
+// Helper to draw header on PDF pages
+function drawHeader(doc: jsPDF, pageWidth: number, projectName: string, date: string) {
+    const sidebarWidth = 25;
+    const marginLeft = sidebarWidth + 10;
+    const marginRight = 15;
+    const primaryColor: [number, number, number] = [234, 88, 12];
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'normal');
+
+    // Project Name Left
+    doc.text(shortenText(cleanText(projectName), 40), marginLeft, 15);
+
+    // Date Right
+    doc.text(date, pageWidth - marginRight, 15, { align: 'right' });
+
+    // Line separator
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, 18, pageWidth - marginRight, 18);
+}
+
+// Helper to draw footer on PDF pages
+function drawFooter(doc: jsPDF, pageWidth: number, pageHeight: number, pageNumber: number, totalPages: number) {
+    const sidebarWidth = 25;
+    const marginLeft = sidebarWidth + 10;
+    const marginRight = 15;
+
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.setFont('helvetica', 'italic');
+
+    // Confidentiality notice
+    doc.text('Documento Confidencial - Uso Interno', marginLeft, pageHeight - 10);
+
+    // Page number
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - marginRight, pageHeight - 10, { align: 'right' });
 }
 
 export async function generatePDF(manual: ProductionManual, svgFiles: { [key: string]: string } = {}): Promise<Blob> {
@@ -136,15 +170,10 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
     const textColor: [number, number, number] = [30, 41, 59]; // #1e293b
     const lightGray: [number, number, number] = [241, 245, 249]; // #f1f5f9
 
-    // Helper to add page with sidebar
+    // Helper to add page with sidebar and header/footer placeholders
     const addPage = () => {
         doc.addPage();
         drawSidebar(doc, pageHeight, manual.proyecto.nombre);
-        // Add page number
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`pagina | ${pageCount}`, pageWidth - 25, pageHeight - 10);
     };
 
     // ===== COVER PAGE =====
@@ -153,40 +182,41 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
 
     // Title
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.setFontSize(28);
+    doc.setFontSize(32);
     doc.setFont('helvetica', 'bold');
-    doc.text('Manual de', marginLeft, 40);
-    doc.text('Produccion', marginLeft, 52);
+    doc.text('MANUAL DE', marginLeft, 50);
+    doc.text('PRODUCCIÓN', marginLeft, 65);
 
     // Project name
     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-    doc.setFontSize(18);
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'normal');
     const shortProjectName = shortenText(cleanText(manual.proyecto.nombre), 30);
-    doc.text(shortProjectName, marginLeft, 70);
+    doc.text(shortProjectName, marginLeft, 85);
 
     // Date and info box
-    yPosition = 90;
+    yPosition = 100;
     doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(1);
     doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
 
     yPosition += 15;
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Fecha: ${manual.fechaGeneracion}`, marginLeft, yPosition);
+    doc.text(`Fecha de Generación: ${manual.fechaGeneracion}`, marginLeft, yPosition);
 
-    yPosition += 10;
+    yPosition += 15;
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
     const descLines = doc.splitTextToSize(cleanText(manual.proyecto.descripcion), contentWidth);
     doc.text(descLines, marginLeft, yPosition);
-    yPosition += descLines.length * 6 + 15;
+    yPosition += descLines.length * 6 + 20;
 
     // Dimensions section
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text('Dimensiones Generales', marginLeft, yPosition);
+    doc.text('DIMENSIONES GENERALES', marginLeft, yPosition);
 
     yPosition += 10;
     const dimensionsData = [
@@ -197,47 +227,47 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
 
     autoTable(doc, {
         startY: yPosition,
-        head: [['Dimension', 'Medida']],
+        head: [['Dimensión', 'Medida']],
         body: dimensionsData,
         theme: 'grid',
         headStyles: {
             fillColor: primaryColor,
-            fontSize: 11,
+            fontSize: 12,
             fontStyle: 'bold',
             halign: 'left',
+            textColor: [255, 255, 255]
         },
-        styles: {
-            fontSize: 10,
-            cellPadding: 5,
+        bodyStyles: {
+            fontSize: 11,
+            cellPadding: 6,
+            textColor: textColor
+        },
+        alternateRowStyles: {
+            fillColor: lightGray
         },
         margin: { left: marginLeft, right: marginRight },
     });
 
-    // Add page number for cover
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text('pagina | 1', pageWidth - 25, pageHeight - 10);
-
     // ===== COMPONENTS PAGE =====
     addPage();
-    yPosition = 20;
+    yPosition = 30; // Start lower to account for header
 
-    doc.setFontSize(20);
+    doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text('Lista de Componentes', marginLeft, yPosition);
+    doc.text('LISTA DE COMPONENTES', marginLeft, yPosition);
 
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-    doc.text(`Total: ${manual.componentes.length} piezas`, marginLeft, yPosition + 10);
+    doc.text(`Total de piezas: ${manual.componentes.length}`, marginLeft, yPosition + 10);
 
     yPosition += 20;
 
     // Components table
     const componentsData = manual.componentes.map((comp, index) => {
         const dims = `${comp.dimensiones.largo || '-'} x ${comp.dimensiones.ancho || '-'} x ${comp.dimensiones.alto || '-'} ${comp.dimensiones.unidad}`;
-        const hasFile = svgFiles[comp.id] ? 'Si' : '-';
+        const hasFile = svgFiles[comp.id] ? 'Sí' : '-';
         return [
             `${index + 1}`,
             cleanText(comp.nombre),
@@ -252,31 +282,30 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
         startY: yPosition,
         head: [['#', 'Componente', 'Dimensiones', 'Material', 'Cant.', 'Archivo']],
         body: componentsData,
-        theme: 'plain',
+        theme: 'striped',
         headStyles: {
-            fillColor: [255, 255, 255],
-            textColor: primaryColor,
+            fillColor: primaryColor,
+            textColor: [255, 255, 255],
             fontSize: 10,
             fontStyle: 'bold',
-            lineWidth: 0,
             halign: 'left',
         },
         bodyStyles: {
-            lineColor: [200, 200, 200],
-            lineWidth: 0.1,
-        },
-        styles: {
+            textColor: textColor,
             fontSize: 9,
             cellPadding: 4,
             valign: 'middle',
         },
+        alternateRowStyles: {
+            fillColor: lightGray
+        },
         columnStyles: {
-            0: { cellWidth: 10, fontStyle: 'bold' },
+            0: { cellWidth: 10, fontStyle: 'bold', halign: 'center' },
             1: { cellWidth: 45 },
             2: { cellWidth: 35 },
             3: { cellWidth: 35 },
-            4: { cellWidth: 15 },
-            5: { cellWidth: 15 },
+            4: { cellWidth: 15, halign: 'center' },
+            5: { cellWidth: 15, halign: 'center' },
         },
         margin: { left: marginLeft, right: marginRight },
     });
@@ -287,13 +316,13 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
         const index = i;
 
         addPage();
-        yPosition = 20;
+        yPosition = 30;
 
         // Component header
         doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.setFontSize(16);
+        doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${index + 1}. ${cleanText(comp.nombre)}`, marginLeft, yPosition);
+        doc.text(`${index + 1}. ${cleanText(comp.nombre).toUpperCase()}`, marginLeft, yPosition);
 
         yPosition += 10;
         doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -304,7 +333,7 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
         doc.setTextColor(textColor[0], textColor[1], textColor[2]);
 
         // Description
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'italic');
         const descLines = doc.splitTextToSize(cleanText(comp.descripcion), contentWidth);
         doc.text(descLines, marginLeft, yPosition);
@@ -329,7 +358,8 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
             theme: 'plain',
             styles: {
                 fontSize: 10,
-                cellPadding: 5,
+                cellPadding: 6,
+                textColor: textColor
             },
             columnStyles: {
                 0: { fontStyle: 'bold', cellWidth: 40, textColor: primaryColor },
@@ -343,22 +373,22 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
         // SVG preview if available
         if (svgFiles[comp.id]) {
             // Check if we need a new page for the image
-            if (yPosition > pageHeight - 100) {
+            if (yPosition > pageHeight - 110) {
                 addPage();
-                yPosition = 20;
+                yPosition = 30;
             }
 
             // Figure Caption
-            doc.setFontSize(10);
+            doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-            doc.text(`Figura ${index + 1}A`, marginLeft, yPosition);
+            doc.text(`Figura ${index + 1}A: Vista Previa`, marginLeft, yPosition);
             yPosition += 5;
 
             // Border for the image
             const imageSize = 100; // mm
-            doc.setDrawColor(100, 100, 100);
-            doc.setLineWidth(0.1);
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.2);
             doc.rect(marginLeft, yPosition, pageWidth - marginLeft - marginRight, imageSize + 10);
 
             // Convert SVG to PNG and embed
@@ -382,20 +412,20 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
             yPosition += imageSize + 20;
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-            doc.text('NOTA: Las medidas estan expresadas en la unidad indicada.', marginLeft, yPosition);
+            doc.setTextColor(100, 100, 100);
+            doc.text('NOTA: Las medidas están expresadas en la unidad indicada.', marginLeft, yPosition);
         }
     }
 
     // ===== CONSUMABLES PAGE =====
     if (manual.consumibles.length > 0) {
         addPage();
-        yPosition = 20;
+        yPosition = 30;
 
-        doc.setFontSize(20);
+        doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.text('Consumibles', marginLeft, yPosition);
+        doc.text('LISTA DE CONSUMIBLES', marginLeft, yPosition);
 
         yPosition += 15;
 
@@ -417,19 +447,33 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
                 fillColor: primaryColor,
                 fontSize: 10,
                 fontStyle: 'bold',
+                textColor: [255, 255, 255]
             },
-            styles: {
+            bodyStyles: {
                 fontSize: 9,
                 cellPadding: 5,
+                textColor: textColor
+            },
+            alternateRowStyles: {
+                fillColor: lightGray
             },
             columnStyles: {
-                0: { cellWidth: 10 },
+                0: { cellWidth: 10, halign: 'center' },
                 1: { cellWidth: 50 },
                 2: { cellWidth: 30 },
                 3: { cellWidth: 60 },
             },
             margin: { left: marginLeft, right: marginRight },
         });
+    }
+
+    // Add Headers and Footers to all pages
+    const totalPages = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+
+
+        drawFooter(doc, pageWidth, pageHeight, i, totalPages);
     }
 
     return doc.output('blob');
@@ -440,26 +484,27 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
 
     // Orange color hex
     const primaryColorHex = "EA580C";
+    const lightGrayHex = "F1F5F9";
 
     // ===== COVER PAGE =====
     children.push(
         new Paragraph({
-            text: 'Manual de Producción',
+            text: 'MANUAL DE PRODUCCIÓN',
             heading: HeadingLevel.HEADING_1,
             alignment: AlignmentType.CENTER,
-            spacing: { after: 200 },
+            spacing: { after: 200, before: 400 },
             border: {
-                bottom: { color: primaryColorHex, space: 1, style: BorderStyle.SINGLE, size: 6 },
+                bottom: { color: primaryColorHex, space: 1, style: BorderStyle.SINGLE, size: 12 },
             }
         })
     );
 
     children.push(
         new Paragraph({
-            text: shortenText(manual.proyecto.nombre, 30),
+            text: manual.proyecto.nombre.toUpperCase(),
             heading: HeadingLevel.HEADING_2,
             alignment: AlignmentType.CENTER,
-            spacing: { after: 400 },
+            spacing: { after: 400, before: 200 },
         })
     );
 
@@ -467,8 +512,9 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
         new Paragraph({
             children: [
                 new TextRun({
-                    text: `Fecha: ${manual.fechaGeneracion}`,
-                    italics: true,
+                    text: `Fecha de Generación: ${manual.fechaGeneracion}`,
+                    bold: true,
+                    size: 24,
                 }),
             ],
             alignment: AlignmentType.CENTER,
@@ -481,6 +527,7 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
             children: [
                 new TextRun({
                     text: manual.proyecto.descripcion,
+                    italics: true,
                 }),
             ],
             alignment: AlignmentType.CENTER,
@@ -491,7 +538,7 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
     // ===== DIMENSIONS =====
     children.push(
         new Paragraph({
-            text: 'Dimensiones Generales',
+            text: 'DIMENSIONES GENERALES',
             heading: HeadingLevel.HEADING_2,
             spacing: { before: 400, after: 200 },
             border: {
@@ -522,8 +569,8 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
             }),
             new TableRow({
                 children: [
-                    new TableCell({ children: [new Paragraph('Fondo')] }),
-                    new TableCell({ children: [new Paragraph(`${manual.proyecto.dimensionesGenerales.fondo} cm`)] }),
+                    new TableCell({ children: [new Paragraph('Fondo')], shading: { fill: lightGrayHex, type: ShadingType.CLEAR, color: "auto" } }),
+                    new TableCell({ children: [new Paragraph(`${manual.proyecto.dimensionesGenerales.fondo} cm`)], shading: { fill: lightGrayHex, type: ShadingType.CLEAR, color: "auto" } }),
                 ],
             }),
             new TableRow({
@@ -538,12 +585,22 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
 
     children.push(dimensionsTable);
 
+    // Page Break after cover
+    children.push(new Paragraph({
+        children: [new TextRun({ text: "", break: 1 })],
+    }));
+    children.push(new Paragraph({
+        pageBreakBefore: true,
+        text: "",
+    }));
+
+
     // ===== COMPONENTS =====
     children.push(
         new Paragraph({
-            text: 'Componentes de Fabricación',
+            text: 'LISTA DE COMPONENTES',
             heading: HeadingLevel.HEADING_2,
-            spacing: { before: 600, after: 200 },
+            spacing: { before: 200, after: 200 },
             border: {
                 bottom: { color: primaryColorHex, space: 1, style: BorderStyle.SINGLE, size: 6 },
             }
@@ -555,7 +612,7 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
         const index = manual.componentes.indexOf(comp);
         children.push(
             new Paragraph({
-                text: `${index + 1}. ${comp.nombre}`,
+                text: `${index + 1}. ${comp.nombre.toUpperCase()}`,
                 heading: HeadingLevel.HEADING_3,
                 spacing: { before: 400, after: 200 },
             })
@@ -625,7 +682,7 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
             children.push(
                 new Paragraph({
                     children: [
-                        new TextRun({ text: `Figura ${index + 1}A`, bold: true, color: primaryColorHex }),
+                        new TextRun({ text: `Figura ${index + 1}A: Vista Previa`, bold: true, color: primaryColorHex }),
                     ],
                     spacing: { before: 200, after: 100 },
                 })
@@ -673,13 +730,19 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
                 );
             }
         }
+
+        // Add page break after each component
+        children.push(new Paragraph({
+            pageBreakBefore: true,
+            text: "",
+        }));
     }
 
     // ===== CONSUMABLES =====
     if (manual.consumibles.length > 0) {
         children.push(
             new Paragraph({
-                text: 'Consumibles',
+                text: 'LISTA DE CONSUMIBLES',
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 200 },
                 border: {
@@ -705,13 +768,16 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
                     cons.tipo === 'adhesivo' ? '🔗' :
                         cons.tipo === 'tornilleria' ? '🔩' : '📦';
 
+            const isEven = index % 2 === 0;
+            const rowShading = isEven ? { fill: "FFFFFF", type: ShadingType.CLEAR, color: "auto" } : { fill: lightGrayHex, type: ShadingType.CLEAR, color: "auto" };
+
             consumablesTableRows.push(
                 new TableRow({
                     children: [
-                        new TableCell({ children: [new Paragraph(`${index + 1}`)] }),
-                        new TableCell({ children: [new Paragraph(`${icon} ${cons.nombre}`)] }),
-                        new TableCell({ children: [new Paragraph(`${cons.cantidad} ${cons.unidad}`)] }),
-                        new TableCell({ children: [new Paragraph(cons.especificaciones)] }),
+                        new TableCell({ children: [new Paragraph(`${index + 1}`)], shading: rowShading }),
+                        new TableCell({ children: [new Paragraph(`${icon} ${cons.nombre}`)], shading: rowShading }),
+                        new TableCell({ children: [new Paragraph(`${cons.cantidad} ${cons.unidad}`)], shading: rowShading }),
+                        new TableCell({ children: [new Paragraph(cons.especificaciones)], shading: rowShading }),
                     ],
                 })
             );
@@ -729,6 +795,59 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
         sections: [
             {
                 properties: {},
+                headers: {
+                    default: new Header({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: manual.proyecto.nombre,
+                                        bold: true,
+                                        color: "666666",
+                                    }),
+                                    new TextRun({
+                                        text: `\t${manual.fechaGeneracion}`,
+                                        color: "999999",
+                                    }),
+                                ],
+                                tabStops: [
+                                    {
+                                        type: "right",
+                                        position: 9000, // Adjust based on page width
+                                    },
+                                ],
+                                border: {
+                                    bottom: { color: primaryColorHex, space: 1, style: BorderStyle.SINGLE, size: 6 },
+                                },
+                            }),
+                        ],
+                    }),
+                },
+                footers: {
+                    default: new Footer({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "Documento Confidencial - Uso Interno",
+                                        italics: true,
+                                        color: "999999",
+                                        size: 16,
+                                    }),
+                                    new TextRun({
+                                        children: ["\tPágina ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES],
+                                    }),
+                                ],
+                                tabStops: [
+                                    {
+                                        type: "right",
+                                        position: 9000,
+                                    },
+                                ],
+                            }),
+                        ],
+                    }),
+                },
                 children: children,
             },
         ],

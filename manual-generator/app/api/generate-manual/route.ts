@@ -100,6 +100,11 @@ export async function POST(request: NextRequest) {
                     ...comp,
                     nombre: safeString(comp.nombre),
                     descripcion: safeString(comp.descripcion),
+                    dimensiones: {
+                        ...comp.dimensiones,
+                        forma: safeString(comp.dimensiones?.forma) || 'rectangulo',
+                    },
+                    svgPath: safeString(comp.svgPath),
                     material: {
                         ...comp.material,
                         tipo: safeString(comp.material?.tipo),

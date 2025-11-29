@@ -17,7 +17,9 @@ export interface Component {
         diametro?: number;
         espesor?: number;
         unidad: 'cm' | 'mm' | 'm';
+        forma?: 'rectangulo' | 'circulo' | 'triangulo' | 'L' | 'irregular';
     };
+    svgPath?: string; // Path SVG simplificado para formas irregulares (d attribute)
     material: {
         tipo: string;
         especificaciones: string;
