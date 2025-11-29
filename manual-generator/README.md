@@ -128,4 +128,4 @@ Para preguntas o problemas, contacta al desarrollador.
 
 ---
 
-**Powered by Gemini 2.0 Flash** 🚀
+**Powered by Gemini 2.5 Pro** 🚀
