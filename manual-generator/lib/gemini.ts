@@ -13,7 +13,7 @@ export async function analyzeRenderWithGemini(
   dimensiones: { frente: number; fondo: number; altura: number },
   especificaciones: string
 ) {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
 
   const imageCount = imagesData.length;
   const imageText = imageCount === 1 ? 'esta imagen de render' : `estas ${imageCount} imágenes de render`;
