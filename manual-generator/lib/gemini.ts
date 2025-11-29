@@ -43,8 +43,12 @@ ${imageCount > 1 ? '**NOTA:** Se proporcionan múltiples vistas del proyecto. An
    - La función del componente
    - Estándares de la industria
    - Durabilidad y costo
+   - **RESTRICCIÓN DE MATERIAL**: El tamaño máximo de tablero estándar es **244 cm x 122 cm**.
 
 4. **CALCULA CANTIDADES DE MATERIAL** necesarias (m², metros lineales, piezas, etc.)
+   - **IMPORTANTE**: Si un componente excede **244 cm x 122 cm**, **DEBES DIVIDIRLO** en múltiples partes lógicas (ej. 'Panel A - Parte 1', 'Panel A - Parte 2') que quepan en el material.
+   - Asegura líneas de unión limpias o encastres.
+   - Asegura que todas las dimensiones sean **ESCALA REAL** basadas en las proporciones del render.
 
 5. **IDENTIFICA LA FORMA GEOMÉTRICA** de cada componente:
    - 'rectangulo': Para formas rectangulares o cuadradas.
@@ -53,9 +57,12 @@ ${imageCount > 1 ? '**NOTA:** Se proporcionan múltiples vistas del proyecto. An
    - 'L': Para formas en L.
    - 'irregular': Para formas complejas que no encajan en las anteriores.
 
-6. **PARA FORMAS IRREGULARES Y VISTAS 3D**:
-   - **VISTA FRONTAL OBLIGATORIA**: Reorienta o normaliza la pieza para verla en una vista completamente frontal (proyección ortográfica), independiente del ángulo en el render. Sin perspectiva ni distorsión.
-   - **DESPLIEGUE**: Si es una pieza 3D que se fabrica plana y se dobla (como chapa o cartón), proporciona la vista desplegada (flat pattern).
+6. **PARA FORMAS IRREGULARES Y VISTAS 3D (CRÍTICO)**:
+   - **VISTA FRONTAL INDIVIDUAL OBLIGATORIA**: Para CADA componente, debes generar su geometría como si la estuvieras viendo COMPLETAMENTE DE FRENTE (proyección ortográfica 2D).
+   - **NORMALIZACIÓN**: Ignora la perspectiva cónica, inclinación o rotación que tenga la pieza en el render. "Aplana" la pieza mentalmente.
+   - **SIN DISTORSIONES**: La forma debe representar la pieza física real lista para corte.
+   - **CARA PRINCIPAL**: En superficies inclinadas, usa la proyección ortográfica de la cara principal de corte.
+   - **DESPLIEGUE**: Si es una pieza 3D que se fabrica plana y se dobla, proporciona la vista desplegada (flat pattern).
    - **PATH DE CORTE (\`svgPath\`)**: Proporciona el path SVG (atributo 'd') del contorno de corte, asumiendo un viewBox de 0 0 100 100.
    - **PATH DE PLIEGUE (\`foldPath\`)**: Si la pieza tiene pliegues internos, proporciona un path SVG separado para estas líneas.
 

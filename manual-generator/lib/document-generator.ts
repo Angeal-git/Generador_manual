@@ -417,6 +417,57 @@ export async function generatePDF(manual: ProductionManual, svgFiles: { [key: st
         }
     }
 
+    // ===== CUTTING DIAGRAMS =====
+    const layoutKeys = Object.keys(svgFiles).filter(key => key.startsWith('layout_'));
+    if (layoutKeys.length > 0) {
+        addPage();
+        yPosition = 30;
+
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text('DIAGRAMAS DE CORTE', marginLeft, yPosition);
+        yPosition += 20;
+
+        for (const key of layoutKeys) {
+            // Check for page break
+            if (yPosition > pageHeight - 120) {
+                addPage();
+                yPosition = 30;
+            }
+
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+            // Format filename: layout_MDF_15mm_hoja_1 -> MDF 15mm - Hoja 1
+            const title = key.replace('layout_', '').replace(/_/g, ' ').replace('hoja', '- Hoja');
+            doc.text(title.toUpperCase(), marginLeft, yPosition);
+            yPosition += 10;
+
+            // Border
+            const imageWidth = pageWidth - marginLeft - marginRight;
+            const imageHeight = imageWidth / 2; // 2:1 ratio for sheets
+
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.2);
+            doc.rect(marginLeft, yPosition, imageWidth, imageHeight);
+
+            try {
+                const pngDataUrl = await svgToPng(svgFiles[key], 2000, 1000);
+                if (pngDataUrl) {
+                    doc.addImage(pngDataUrl, 'PNG', marginLeft, yPosition, imageWidth, imageHeight);
+                }
+            } catch (e) {
+                console.error('Error embedding layout SVG:', e);
+                doc.setFontSize(10);
+                doc.setTextColor(255, 0, 0);
+                doc.text('(Error al generar diagrama)', marginLeft + 5, yPosition + 10);
+            }
+
+            yPosition += imageHeight + 20;
+        }
+    }
+
     // ===== CONSUMABLES PAGE =====
     if (manual.consumibles.length > 0) {
         addPage();
@@ -732,6 +783,78 @@ export async function generateDOCX(manual: ProductionManual, svgFiles: { [key: s
         }
 
         // Add page break after each component
+        children.push(new Paragraph({
+            pageBreakBefore: true,
+            text: "",
+        }));
+    }
+
+    // ===== CUTTING DIAGRAMS =====
+    const layoutKeys = Object.keys(svgFiles).filter(key => key.startsWith('layout_'));
+    if (layoutKeys.length > 0) {
+        children.push(
+            new Paragraph({
+                text: 'DIAGRAMAS DE CORTE',
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 600, after: 200 },
+                border: {
+                    bottom: { color: primaryColorHex, space: 1, style: BorderStyle.SINGLE, size: 6 },
+                }
+            })
+        );
+
+        for (const key of layoutKeys) {
+            const title = key.replace('layout_', '').replace(/_/g, ' ').replace('hoja', '- Hoja');
+
+            children.push(
+                new Paragraph({
+                    text: title.toUpperCase(),
+                    heading: HeadingLevel.HEADING_3,
+                    spacing: { before: 400, after: 200 },
+                })
+            );
+
+            try {
+                const pngDataUrl = await svgToPng(svgFiles[key], 1600, 800);
+                if (pngDataUrl) {
+                    const base64Data = pngDataUrl.split(',')[1];
+                    const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+                    children.push(
+                        new Paragraph({
+                            children: [
+                                new ImageRun({
+                                    data: imageBuffer,
+                                    transformation: {
+                                        width: 600,
+                                        height: 300,
+                                    },
+                                }),
+                            ],
+                            spacing: { after: 400 },
+                            alignment: AlignmentType.CENTER,
+                            border: {
+                                top: { color: "CCCCCC", space: 1, style: BorderStyle.SINGLE, size: 2 },
+                                bottom: { color: "CCCCCC", space: 1, style: BorderStyle.SINGLE, size: 2 },
+                                left: { color: "CCCCCC", space: 1, style: BorderStyle.SINGLE, size: 2 },
+                                right: { color: "CCCCCC", space: 1, style: BorderStyle.SINGLE, size: 2 },
+                            }
+                        })
+                    );
+                }
+            } catch (e) {
+                console.error('Error adding layout image to DOCX:', e);
+                children.push(
+                    new Paragraph({
+                        text: '(Error al adjuntar diagrama)',
+                        spacing: { after: 400 },
+                        alignment: AlignmentType.CENTER,
+                    })
+                );
+            }
+        }
+
+        // Page Break after diagrams
         children.push(new Paragraph({
             pageBreakBefore: true,
             text: "",

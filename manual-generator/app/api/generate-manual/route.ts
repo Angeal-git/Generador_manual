@@ -182,6 +182,34 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        // Generate Nesting Previews
+        try {
+            const { generateNestingPreview } = await import('@/lib/nesting');
+            const nestingFiles = generateNestingPreview(manual.componentes);
+
+            // Merge nesting files into svgFiles
+            Object.assign(svgFiles, nestingFiles);
+
+            // Add nesting info to optimization section if needed, or just let the frontend discover them via a list?
+            // For now, we'll just ensure they are available.
+            // We could add a new field to manual.optimizacionMateriales to link to these files.
+
+            if (manual.optimizacionMateriales) {
+                manual.optimizacionMateriales.forEach(opt => {
+                    // Find sheets matching this material
+                    const matName = opt.material.replace(/[^a-z0-9]/gi, '_');
+                    const relatedSheets = Object.keys(nestingFiles).filter(k => k.includes(matName));
+                    if (relatedSheets.length > 0) {
+                        opt.suggestions.push(`Ver diagramas de corte: ${relatedSheets.join(', ')}`);
+                    }
+                });
+            }
+
+        } catch (nestingError) {
+            console.error('Error generating nesting preview:', nestingError);
+            // Continue without nesting if it fails
+        }
+
         // Store SVGs temporarily (in production, use a proper storage solution)
         // For now, we'll send them in the response
         const response = {
