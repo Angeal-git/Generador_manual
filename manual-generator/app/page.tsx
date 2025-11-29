@@ -143,7 +143,7 @@ export default function Home() {
                             <div>
                                 <h3>Generando manual de producción...</h3>
                                 <p className="text-muted">
-                                    La IA está analizando tu render y calculando especificaciones. Esto puede tomar 30-60 segundos.
+                                    La IA está analizando tu render y calculando especificaciones. Esto puede tomar un tiempo.
                                 </p>
                             </div>
                         </div>
