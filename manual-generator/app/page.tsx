@@ -79,7 +79,7 @@ export default function Home() {
             <div className="container">
                 {/* Hero Section */}
                 <div className={styles.hero}>
-                    <h1>🏭 StandGenius</h1>
+                    <img src="/logo.png" alt="StandGenius" className={styles.logo} />
                     <p className={styles.subtitle}>
                         Sube el render de tu proyecto y obtén un manual de producción completo con IA
                     </p>

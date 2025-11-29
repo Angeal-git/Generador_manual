@@ -25,32 +25,43 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
-            // Add new files to existing ones
-            const newImagenes = [...imagenes, ...files];
-            setImagenes(newImagenes);
+            // Filter for images and PDFs only
+            const validFiles = files.filter(file =>
+                file.type.startsWith('image/') || file.type === 'application/pdf'
+            );
 
-            // Generate previews for new files
-            const newPreviews: string[] = [];
-            let loadedCount = 0;
+            if (validFiles.length !== files.length) {
+                alert('Solo se permiten archivos de imagen y PDF.');
+            }
 
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    newPreviews.push(reader.result as string);
-                    loadedCount++;
+            if (validFiles.length > 0) {
+                // Add new files to existing ones
+                const newImagenes = [...imagenes, ...validFiles];
+                setImagenes(newImagenes);
 
-                    // When all new previews are loaded, update state and notify parent
-                    if (loadedCount === files.length) {
-                        const allPreviews = [...imagenesPreview, ...newPreviews];
-                        setImagenesPreview(allPreviews);
-                        onImagesChange?.(allPreviews);
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+                // Generate previews for new files
+                const newPreviews: string[] = [];
+                let loadedCount = 0;
 
-            // Reset input value to allow selecting the same file again
-            e.target.value = '';
+                validFiles.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        newPreviews.push(reader.result as string);
+                        loadedCount++;
+
+                        // When all new previews are loaded, update state and notify parent
+                        if (loadedCount === validFiles.length) {
+                            const allPreviews = [...imagenesPreview, ...newPreviews];
+                            setImagenesPreview(allPreviews);
+                            onImagesChange?.(allPreviews);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                // Reset input value to allow selecting the same file again
+                e.target.value = '';
+            }
         }
     };
 
@@ -140,8 +151,8 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                         multiple
                     />
                     <label htmlFor="imagen" className={styles.uploadLabel}>
-                        <div className={styles.uploadPlaceholder}>
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <div className={imagenes.length > 0 ? styles.uploadPlaceholderSubtle : styles.uploadPlaceholder}>
+                            <svg width={imagenes.length > 0 ? "24" : "48"} height={imagenes.length > 0 ? "24" : "48"} viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 <polyline points="17 8 12 3 7 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 <line x1="12" y1="3" x2="12" y2="15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

@@ -52,43 +52,91 @@
 
 .uploadPlaceholder {
     border: 2px dashed var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-3xl);
     text-align: center;
-    transition: all var(--transition-base);
-    background: var(--color-bg-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(to bottom, var(--color-bg-primary), var(--color-bg-secondary));
+    position: relative;
+    overflow: hidden;
 }
 
 .uploadPlaceholder:hover {
     border-color: var(--color-primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: linear-gradient(to bottom, var(--color-bg-primary), rgba(99, 102, 241, 0.05));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .uploadPlaceholder svg {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.uploadPlaceholder:hover svg {
     color: var(--color-primary);
-    margin-bottom: var(--spacing-md);
+    transform: scale(1.1);
 }
 
 .uploadPlaceholder p {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-text-primary);
     margin-bottom: var(--spacing-xs);
+    font-size: 1.1rem;
 }
 
-.preview {
-    position: relative;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 2px solid var(--color-primary);
-}
-
-.preview img {
-    width: 100%;
-    height: auto;
-    max-height: 400px;
-    object-fit: contain;
+.uploadPlaceholder span {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
     display: block;
+    margin-top: var(--spacing-xs);
+}
+
+.uploadPlaceholderSubtle {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    transition: all 0.2s ease;
     background: var(--color-bg-primary);
+    cursor: pointer;
+    min-height: 64px;
+    width: 100%;
+}
+
+.uploadPlaceholderSubtle:hover {
+    border-color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.05);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.uploadPlaceholderSubtle svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-text-secondary);
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.uploadPlaceholderSubtle:hover svg {
+    color: var(--color-primary);
+}
+
+.uploadPlaceholderSubtle p {
+    margin: 0;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+}
+
+.uploadPlaceholderSubtle span {
+    display: none;
 }
 
 .changeImage {

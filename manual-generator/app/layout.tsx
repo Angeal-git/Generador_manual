@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     title: 'StandGenius - Generador de Manuales de Producción',
     description: 'Genera manuales de producción detallados para tus proyectos usando inteligencia artificial. Analiza renders y obtén listas de materiales, dimensiones y archivos de corte.',
     keywords: 'producción, manual, fabricación, IA, CNC, corte láser, stands, displays',
+    icons: {
+        icon: '/icon.png',
+    },
 }
 
 export default function RootLayout({
