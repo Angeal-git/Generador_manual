@@ -32,6 +32,23 @@ export interface Component {
     archivoUrl?: string; // URL del SVG generado
 }
 
+export interface MaterialOptimization {
+    material: string; // e.g., "MDF 15mm"
+    boardSize: string; // e.g., "244x122 cm"
+    components: string[]; // Component IDs using this material
+    efficiency: number; // Percentage of material used (0-100)
+    suggestions: string[]; // Cutting layout suggestions
+}
+
+export interface AssemblyStep {
+    step: number;
+    description: string;
+    components: string[]; // Component IDs involved
+    estimatedTime: string; // e.g., "30 minutos"
+    tools: string[]; // Required tools
+    warnings: string[]; // Safety warnings
+}
+
 export interface Consumable {
     id: string;
     nombre: string;
@@ -49,7 +66,8 @@ export interface ProductionManual {
     };
     componentes: Component[];
     consumibles: Consumable[];
-    secuenciaEnsamblaje?: string[];
+    optimizacionMateriales?: MaterialOptimization[];
+    secuenciaEnsamblaje?: AssemblyStep[];
     notasGenerales: string[];
     fechaGeneracion: string;
 }

@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
             },
             componentes: Array.isArray(aiResponse.componentes) ? aiResponse.componentes : [],
             consumibles: Array.isArray(aiResponse.consumibles) ? aiResponse.consumibles : [],
+            optimizacionMateriales: Array.isArray(aiResponse.optimizacionMateriales) ? aiResponse.optimizacionMateriales : [],
             secuenciaEnsamblaje: Array.isArray(aiResponse.secuenciaEnsamblaje) ? aiResponse.secuenciaEnsamblaje : [],
             notasGenerales: Array.isArray(aiResponse.notasGenerales) ? aiResponse.notasGenerales : [],
             fechaGeneracion: formatDate(new Date()),

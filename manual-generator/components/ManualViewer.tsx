@@ -108,6 +108,43 @@ export default function ManualViewer({ manual, svgFiles }: ManualViewerProps) {
                 </div>
             )}
 
+            {/* Material Optimization */}
+            {manual.optimizacionMateriales && manual.optimizacionMateriales.length > 0 && (
+                <div className={styles.section}>
+                    <h2>📐 Optimización de Materiales</h2>
+                    <p className="text-muted mb-lg">
+                        Sugerencias para minimizar desperdicio de material
+                    </p>
+
+                    {manual.optimizacionMateriales.map((opt, index) => (
+                        <div key={index} className={styles.optimizationCard}>
+                            <div className={styles.optimizationHeader}>
+                                <h3>{opt.material}</h3>
+                                <span className={styles.efficiencyBadge}>
+                                    {opt.efficiency}% eficiencia
+                                </span>
+                            </div>
+                            <div className={styles.optimizationDetails}>
+                                <p className="text-muted">
+                                    <strong>Tamaño de tablero:</strong> {opt.boardSize}
+                                </p>
+                                <p className="text-muted">
+                                    <strong>Componentes:</strong> {opt.components.join(', ')}
+                                </p>
+                                <div className={styles.suggestionsList}>
+                                    <strong>Sugerencias de corte:</strong>
+                                    <ul>
+                                        {opt.suggestions.map((suggestion, i) => (
+                                            <li key={i}>{suggestion}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* Assembly Sequence */}
             {manual.secuenciaEnsamblaje && manual.secuenciaEnsamblaje.length > 0 && (
                 <div className={styles.section}>
@@ -117,12 +154,41 @@ export default function ManualViewer({ manual, svgFiles }: ManualViewerProps) {
                     </p>
 
                     <div className={styles.assemblyList}>
-                        {manual.secuenciaEnsamblaje.map((paso, index) => (
-                            <div key={index} className={styles.assemblyStep}>
-                                <div className={styles.stepNumber}>{index + 1}</div>
-                                <p>{paso}</p>
-                            </div>
-                        ))}
+                        {manual.secuenciaEnsamblaje.map((paso, index) => {
+                            const isDetailedStep = typeof paso === 'object' && 'description' in paso;
+
+                            return (
+                                <div key={index} className={styles.assemblyStep}>
+                                    <div className={styles.stepNumber}>{isDetailedStep ? paso.step : index + 1}</div>
+                                    <div className={styles.stepContent}>
+                                        <p className={styles.stepDescription}>
+                                            {isDetailedStep ? paso.description : paso}
+                                        </p>
+                                        {isDetailedStep && (
+                                            <>
+                                                <div className={styles.stepMeta}>
+                                                    <span className={styles.stepTime}>⏱️ {paso.estimatedTime}</span>
+                                                    {paso.tools && paso.tools.length > 0 && (
+                                                        <span className={styles.stepTools}>
+                                                            🔧 {paso.tools.join(', ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {paso.warnings && paso.warnings.length > 0 && (
+                                                    <div className={styles.stepWarnings}>
+                                                        {paso.warnings.map((warning, i) => (
+                                                            <div key={i} className={styles.warning}>
+                                                                ⚠️ {warning}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

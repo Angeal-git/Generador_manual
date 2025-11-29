@@ -11,9 +11,10 @@ interface InputFormProps {
         especificaciones: string;
     }) => void;
     isLoading: boolean;
+    onImagesChange?: (previews: string[]) => void;
 }
 
-export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
+export default function InputForm({ onSubmit, isLoading, onImagesChange }: InputFormProps) {
     const [imagenes, setImagenes] = useState<File[]>([]);
     const [imagenesPreview, setImagenesPreview] = useState<string[]>([]);
     const [frente, setFrente] = useState<string>('');
@@ -29,10 +30,21 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             setImagenes(newImagenes);
 
             // Generate previews for new files
+            const newPreviews: string[] = [];
+            let loadedCount = 0;
+
             files.forEach(file => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    setImagenesPreview(prev => [...prev, reader.result as string]);
+                    newPreviews.push(reader.result as string);
+                    loadedCount++;
+
+                    // When all new previews are loaded, update state and notify parent
+                    if (loadedCount === files.length) {
+                        const allPreviews = [...imagenesPreview, ...newPreviews];
+                        setImagenesPreview(allPreviews);
+                        onImagesChange?.(allPreviews);
+                    }
                 };
                 reader.readAsDataURL(file);
             });
@@ -43,8 +55,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     };
 
     const handleRemoveImage = (index: number) => {
+        const newPreviews = imagenesPreview.filter((_, i) => i !== index);
         setImagenes(prev => prev.filter((_, i) => i !== index));
-        setImagenesPreview(prev => prev.filter((_, i) => i !== index));
+        setImagenesPreview(newPreviews);
+        onImagesChange?.(newPreviews);
     };
 
     const handleSubmit = (e: React.FormEvent) => {

@@ -148,7 +148,7 @@
     /* Blue 500 */
     border: 1px solid #2563eb;
     /* Blue 600 */
-    color: white;
+    color: rgb(255, 255, 255);
 }
 
 .previewBtn:hover {

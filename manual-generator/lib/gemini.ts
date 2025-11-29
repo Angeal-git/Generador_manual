@@ -66,7 +66,18 @@ ${imageCount > 1 ? '**NOTA:** Se proporcionan múltiples vistas del proyecto. An
 
 9. **PROPORCIONA NOTAS DE FABRICACIÓN** para cada componente (procesos necesarios, acabados, ensamblaje)
 
-10. **SUGIERE UNA SECUENCIA DE ENSAMBLAJE** lógica
+10. **OPTIMIZACIÓN DE MATERIALES**: Agrupa componentes por tipo de material y sugiere cómo cortarlos de tableros estándar:
+   - Para MDF/madera: tableros de 244x122 cm
+   - Para acrílico: láminas de 200x100 cm
+   - Calcula el porcentaje de aprovechamiento del material
+   - Sugiere disposición de cortes para minimizar desperdicio
+
+11. **SECUENCIA DE ENSAMBLAJE DETALLADA**: Proporciona pasos específicos con:
+   - Descripción clara de cada paso
+   - Componentes involucrados (IDs)
+   - Tiempo estimado por paso
+   - Herramientas necesarias
+   - Advertencias de seguridad si aplica
 
 **IMPORTANTE:**
 - IGNORA completamente la creación de muebles (sillas, mesas, sofás, etc.) a menos que sean parte estructural del display.
@@ -113,24 +124,38 @@ Responde ÚNICAMENTE con un objeto JSON válido (sin markdown, sin \`\`\`json) c
       "cantidad": 5,
       "unidad": "metros",
       "especificaciones": "Tira LED 12V, 60 LEDs/metro, blanco cálido 3000K"
-    },
+    }
+  ],
+  "optimizacionMateriales": [
     {
-      "id": "cons-2",
-      "nombre": "Pintura blanca mate",
-      "tipo": "pintura",
-      "cantidad": 2,
-      "unidad": "litros",
-      "especificaciones": "Pintura acrílica blanca mate para MDF"
+      "material": "MDF 15mm",
+      "boardSize": "244x122 cm",
+      "components": ["comp-1", "comp-2"],
+      "efficiency": 85,
+      "suggestions": [
+        "Cortar panel frontal (200x100cm) en la esquina superior izquierda",
+        "Aprovechar el espacio restante para paneles laterales (50x100cm cada uno)",
+        "Desperdicio estimado: 15% (puede usarse para refuerzos)"
+      ]
     }
   ],
   "secuenciaEnsamblaje": [
-    "1. Cortar todos los paneles de MDF según dimensiones",
-    "2. Lijar y preparar superficies",
-    "3. Aplicar pintura base",
-    "4. Ensamblar estructura principal",
-    "5. Instalar iluminación LED",
-    "6. Colocar logos y vinilos",
-    "7. Realizar acabados finales"
+    {
+      "step": 1,
+      "description": "Cortar todos los paneles de MDF según dimensiones",
+      "components": ["comp-1", "comp-2", "comp-3"],
+      "estimatedTime": "45 minutos",
+      "tools": ["Sierra CNC", "Cinta métrica", "Lápiz"],
+      "warnings": ["Usar protección auditiva y gafas de seguridad"]
+    },
+    {
+      "step": 2,
+      "description": "Lijar todas las superficies cortadas",
+      "components": ["comp-1", "comp-2", "comp-3"],
+      "estimatedTime": "30 minutos",
+      "tools": ["Lijadora orbital", "Lija grano 120 y 220"],
+      "warnings": ["Usar mascarilla antipolvo"]
+    }
   ],
   "notasGenerales": [
     "Verificar nivelación durante ensamblaje",

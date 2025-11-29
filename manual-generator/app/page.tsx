@@ -11,6 +11,7 @@ export default function Home() {
     const [svgFiles, setSvgFiles] = useState<{ [key: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
     const handleSubmit = async (data: {
         imagenes: File[];
@@ -69,6 +70,7 @@ export default function Home() {
         setManual(null);
         setSvgFiles({});
         setError('');
+        setImagePreviews([]);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -77,7 +79,7 @@ export default function Home() {
             <div className="container">
                 {/* Hero Section */}
                 <div className={styles.hero}>
-                    <h1>🏭 Generador de Manuales de Producción</h1>
+                    <h1>🏭 StandGenius</h1>
                     <p className={styles.subtitle}>
                         Sube el render de tu proyecto y obtén un manual de producción completo con IA
                     </p>
@@ -108,10 +110,28 @@ export default function Home() {
                     </div>
                 )}
 
+                {/* Uploaded Images Preview */}
+                {Array.isArray(imagePreviews) && imagePreviews.length > 0 && (
+                    <div className={styles.imagesPreviewSection}>
+                        <h3 className={styles.imagesSectionTitle}>📸 Imágenes del Proyecto</h3>
+                        <div className={styles.imagesGrid}>
+                            {imagePreviews.map((preview, index) => (
+                                <div key={index} className={styles.imagePreviewItem}>
+                                    <img src={preview} alt={`Render ${index + 1}`} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Input Form */}
                 {!manual && (
                     <div className={styles.formSection}>
-                        <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
+                        <InputForm
+                            onSubmit={handleSubmit}
+                            isLoading={isLoading}
+                            onImagesChange={setImagePreviews}
+                        />
                     </div>
                 )}
 
@@ -150,7 +170,7 @@ export default function Home() {
                 {/* Footer */}
                 <footer className={styles.footer}>
                     <p>
-                        Generador de Manuales de Producción • Powered by{' '}
+                        StandGenius • Powered by{' '}
                         <strong>Gemini 2.0 Flash</strong>
                     </p>
                 </footer>

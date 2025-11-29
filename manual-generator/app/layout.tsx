@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: 'Generador de Manuales de Producción | IA',
+    title: 'StandGenius - Generador de Manuales de Producción',
     description: 'Genera manuales de producción detallados para tus proyectos usando inteligencia artificial. Analiza renders y obtén listas de materiales, dimensiones y archivos de corte.',
     keywords: 'producción, manual, fabricación, IA, CNC, corte láser, stands, displays',
 }
