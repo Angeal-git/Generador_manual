@@ -176,6 +176,7 @@ export function generateSVG(component: Component): string {
         <!-- Irregular Shape from Path -->
         <g transform="translate(${startX}, ${startY}) scale(${drawWidth / 100}, ${drawHeight / 100})">
           <path d="${component.svgPath}" fill="url(#usefulMaterial)" stroke="#000000" stroke-width="3" vector-effect="non-scaling-stroke"/>
+          ${component.foldPath ? `<path d="${component.foldPath}" fill="none" stroke="#FF0000" stroke-width="2" stroke-dasharray="5,5" vector-effect="non-scaling-stroke"/>` : ''}
         </g>`;
       } else {
         // Fallback to rectangle with "Irregular" text

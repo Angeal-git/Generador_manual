@@ -20,6 +20,7 @@ export interface Component {
         forma?: 'rectangulo' | 'circulo' | 'triangulo' | 'L' | 'irregular';
     };
     svgPath?: string; // Path SVG simplificado para formas irregulares (d attribute)
+    foldPath?: string; // Path SVG para líneas de pliegue (d attribute)
     material: {
         tipo: string;
         especificaciones: string;

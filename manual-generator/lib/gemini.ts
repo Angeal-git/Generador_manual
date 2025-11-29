@@ -53,7 +53,11 @@ ${imageCount > 1 ? '**NOTA:** Se proporcionan múltiples vistas del proyecto. An
    - 'L': Para formas en L.
    - 'irregular': Para formas complejas que no encajan en las anteriores.
 
-6. **PARA FORMAS IRREGULARES**, intenta proporcionar una descripción simplificada del path SVG (atributo 'd') si es posible, asumiendo un viewBox de 0 0 100 100.
+6. **PARA FORMAS IRREGULARES Y VISTAS 3D**:
+   - **VISTA FRONTAL OBLIGATORIA**: Reorienta o normaliza la pieza para verla en una vista completamente frontal (proyección ortográfica), independiente del ángulo en el render. Sin perspectiva ni distorsión.
+   - **DESPLIEGUE**: Si es una pieza 3D que se fabrica plana y se dobla (como chapa o cartón), proporciona la vista desplegada (flat pattern).
+   - **PATH DE CORTE (\`svgPath\`)**: Proporciona el path SVG (atributo 'd') del contorno de corte, asumiendo un viewBox de 0 0 100 100.
+   - **PATH DE PLIEGUE (\`foldPath\`)**: Si la pieza tiene pliegues internos, proporciona un path SVG separado para estas líneas.
 
 7. **IDENTIFICA CONSUMIBLES** necesarios:
    - Iluminación (tipo, cantidad de metros de tira LED, watts, etc.)
@@ -104,7 +108,8 @@ Responde ÚNICAMENTE con un objeto JSON válido (sin markdown, sin \`\`\`json) c
         "unidad": "cm",
         "forma": "rectangulo"
       },
-      "svgPath": "M10 10 H 90 V 90 H 10 Z", // Solo si es irregular
+      "svgPath": "M10 10 H 90 V 90 H 10 Z", // Path de corte (contorno externo)
+      "foldPath": "M10 50 H 90", // Path de pliegue (líneas internas, opcional)
       "material": {
         "tipo": "MDF 15mm",
         "especificaciones": "MDF de 15mm de espesor, acabado liso",
@@ -164,7 +169,7 @@ Responde ÚNICAMENTE con un objeto JSON válido (sin markdown, sin \`\`\`json) c
   ]
 }
 
-SÉ MUY DETALLADO Y PRECISO. Este manual será usado para fabricación real.`;
+SÉ MUY DETALLADO Y PRECISO. Este manual será usado para fabricación real. Asegúrate de que las vistas SVG sean proyecciones ortográficas frontales perfectas.`;
 
   // Build content array with all images
   const content: any[] = [];

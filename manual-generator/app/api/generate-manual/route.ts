@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
                         forma: safeString(comp.dimensiones?.forma) || 'rectangulo',
                     },
                     svgPath: safeString(comp.svgPath),
+                    foldPath: safeString(comp.foldPath),
                     material: {
                         ...comp.material,
                         tipo: safeString(comp.material?.tipo),

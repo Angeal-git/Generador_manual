@@ -171,7 +171,7 @@ export default function Home() {
                 <footer className={styles.footer}>
                     <p>
                         StandGenius • Powered by{' '}
-                        <strong>Gemini 2.0 Flash</strong>
+                        <strong>Gemini 2.5 Flash</strong>
                     </p>
                 </footer>
             </div>
