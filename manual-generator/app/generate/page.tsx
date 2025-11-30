@@ -2,10 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import InputForm from '@/components/InputForm';
-import ManualViewer from '@/components/ManualViewer';
 import { ProductionManual, ProjectDimensions } from '@/lib/types';
 import styles from './page.module.css';
+
+// Lazy load ManualViewer since it's only needed after generation
+const ManualViewer = dynamic(() => import('@/components/ManualViewer'), {
+    loading: () => (
+        <div className="loading" style={{ padding: '2rem', textAlign: 'center' }}>
+            <div className="spinner" style={{ width: '40px', height: '40px', margin: '0 auto' }} />
+            <p style={{ marginTop: '1rem' }}>Cargando visor...</p>
+        </div>
+    ),
+    ssr: false
+});
 
 export default function GeneratePage() {
     const [manual, setManual] = useState<ProductionManual | null>(null);
