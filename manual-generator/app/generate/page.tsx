@@ -82,6 +82,8 @@ export default function GeneratePage() {
     return (
         <main className={styles.main}>
             <div className={`container ${styles.formView}`}>
+
+
                 <div className={styles.backButton}>
                     <Link href="/" className="btn btn-secondary">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">

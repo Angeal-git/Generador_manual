@@ -25,6 +25,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
     const [fondo, setFondo] = useState<string>('');
     const [altura, setAltura] = useState<string>('');
     const [especificaciones, setEspecificaciones] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Validation errors
     const [errors, setErrors] = useState<{
@@ -37,6 +38,13 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
     useEffect(() => {
         onImagesChange?.(previews);
     }, [previews, onImagesChange]);
+
+    // Reset local submitting state when parent finishes loading
+    useEffect(() => {
+        if (!isLoading) {
+            setIsSubmitting(false);
+        }
+    }, [isLoading]);
 
     const handleImageChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -85,7 +93,9 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
 
-        if (isLoading) return;
+        if (isLoading || isSubmitting) return;
+
+        setIsSubmitting(true);
 
         const dimensiones: ProjectDimensions = {
             frente: parseFloat(frente),
@@ -108,6 +118,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
             if (firstError) {
                 alert(firstError);
             }
+            setIsSubmitting(false);
             return;
         }
 
@@ -118,7 +129,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
             dimensiones,
             especificaciones,
         });
-    }, [frente, fondo, altura, especificaciones, images, onSubmit]);
+    }, [frente, fondo, altura, especificaciones, images, onSubmit, isLoading, isSubmitting]);
 
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -254,9 +265,9 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
             <button
                 type="submit"
                 className={`btn btn-primary ${styles.submitBtn}`}
-                disabled={isLoading || isValidating}
+                disabled={isLoading || isValidating || isSubmitting}
             >
-                {isLoading ? (
+                {isLoading || isSubmitting ? (
                     <>
                         <LoaderIcon width={20} height={20} className="spinner" />
                         Generando manual...
