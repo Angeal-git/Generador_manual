@@ -85,6 +85,8 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
 
+        if (isLoading) return;
+
         const dimensiones: ProjectDimensions = {
             frente: parseFloat(frente),
             fondo: parseFloat(fondo),

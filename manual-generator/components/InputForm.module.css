@@ -1,11 +1,18 @@
 /* Form Container */
 .form {
-    background: var(--color-bg-elevated);
-    border-radius: var(--radius-lg);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
     padding: var(--spacing-xl);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     max-width: 1200px;
     margin: 0 auto;
+    transition: all var(--transition-base);
+}
+
+.form:hover {
+    border-color: var(--color-border-light);
+    box-shadow: var(--shadow-lg);
 }
 
 .formGrid {
@@ -218,6 +225,12 @@
 .submitBtn {
     width: 100%;
     margin-top: var(--spacing-lg);
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* Error Messages */
