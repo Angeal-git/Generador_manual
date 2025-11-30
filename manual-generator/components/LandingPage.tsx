@@ -1,12 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import styles from './LandingPage.module.css';
 
-interface LandingPageProps {
-    onStart: () => void;
-}
-
-export default function LandingPage({ onStart }: LandingPageProps) {
+export default function LandingPage() {
     const scrollToSection = (sectionId: string) => {
         const element = document.getElementById(sectionId);
         element?.scrollIntoView({ behavior: 'smooth' });
@@ -29,9 +26,9 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             <button onClick={() => scrollToSection('materiales')} className={styles.navLink}>
                                 Materiales
                             </button>
-                            <button onClick={onStart} className="btn btn-primary">
+                            <Link href="/generate" className="btn btn-primary">
                                 Comenzar
-                            </button>
+                            </Link>
                         </div>
                     </nav>
                 </div>
@@ -58,13 +55,13 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                             detallados con materiales, dimensiones y archivos de corte en segundos.
                         </p>
                         <div className={styles.heroCta}>
-                            <button onClick={onStart} className="btn btn-primary">
+                            <Link href="/generate" className="btn btn-primary">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     <polyline points="14 2 14 8 20 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                                 Generar Manual
-                            </button>
+                            </Link>
                             <button onClick={() => scrollToSection('como-funciona')} className="btn btn-secondary">
                                 Ver Demo
                             </button>
@@ -166,13 +163,13 @@ export default function LandingPage({ onStart }: LandingPageProps) {
                     </div>
 
                     <div className={styles.ctaSection}>
-                        <button onClick={onStart} className="btn btn-primary">
+                        <Link href="/generate" className="btn btn-primary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M5 12h14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 <path d="M12 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                             Comenzar Ahora
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </section>
