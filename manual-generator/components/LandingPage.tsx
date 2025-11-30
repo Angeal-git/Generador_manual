@@ -62,9 +62,7 @@ export default function LandingPage() {
                                 </svg>
                                 Generar Manual
                             </Link>
-                            <button onClick={() => scrollToSection('como-funciona')} className="btn btn-secondary">
-                                Ver Demo
-                            </button>
+
                         </div>
                     </div>
                 </div>
