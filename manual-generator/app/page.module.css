@@ -3,6 +3,21 @@
     padding: var(--spacing-2xl) 0;
 }
 
+.formView {
+    min-height: 100vh;
+}
+
+.backButton {
+    margin-bottom: var(--spacing-xl);
+    animation: fadeInUp 0.5s ease;
+}
+
+.backButton button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
 .hero {
     text-align: center;
     margin-bottom: var(--spacing-2xl);
