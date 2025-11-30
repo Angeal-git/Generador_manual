@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import InputForm from '@/components/InputForm';
 import { ProductionManual, ProjectDimensions } from '@/lib/types';
@@ -19,6 +19,7 @@ const ManualViewer = dynamic(() => import('@/components/ManualViewer'), {
 });
 
 export default function GeneratePage() {
+    const router = useRouter();
     const [manual, setManual] = useState<ProductionManual | null>(null);
     const [svgFiles, setSvgFiles] = useState<{ [key: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
@@ -83,15 +84,14 @@ export default function GeneratePage() {
         <main className={styles.main}>
             <div className={`container ${styles.formView}`}>
 
-
                 <div className={styles.backButton}>
-                    <Link href="/" className="btn btn-secondary">
+                    <button onClick={() => router.push('/')} className="btn btn-secondary">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M19 12H5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         Volver al Inicio
-                    </Link>
+                    </button>
                 </div>
 
                 <div className={styles.hero}>
