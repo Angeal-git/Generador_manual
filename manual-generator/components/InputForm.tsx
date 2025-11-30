@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ProjectDimensions } from '@/lib/types';
+import { useImagePreview } from '@/hooks/useImagePreview';
+import { validateDimensions, validateSpecifications, validateForm } from '@/lib/validators';
+import { XIcon, UploadIcon, LoaderIcon } from '@/components/icons';
 import styles from './InputForm.module.css';
 
 interface InputFormProps {
@@ -15,91 +18,105 @@ interface InputFormProps {
 }
 
 export default function InputForm({ onSubmit, isLoading, onImagesChange }: InputFormProps) {
-    const [imagenes, setImagenes] = useState<File[]>([]);
-    const [imagenesPreview, setImagenesPreview] = useState<string[]>([]);
+    // Use custom hook for image management
+    const { images, previews, addImages, removeImage, isValidating } = useImagePreview();
+
     const [frente, setFrente] = useState<string>('');
     const [fondo, setFondo] = useState<string>('');
     const [altura, setAltura] = useState<string>('');
     const [especificaciones, setEspecificaciones] = useState<string>('');
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length > 0) {
-            // Filter for images and PDFs only
-            const validFiles = files.filter(file =>
-                file.type.startsWith('image/') || file.type === 'application/pdf'
-            );
+    // Validation errors
+    const [errors, setErrors] = useState<{
+        images?: string;
+        dimensions?: string;
+        specifications?: string;
+    }>({});
 
-            if (validFiles.length !== files.length) {
-                alert('Solo se permiten archivos de imagen y PDF.');
-            }
+    // Notify parent when previews change
+    useEffect(() => {
+        onImagesChange?.(previews);
+    }, [previews, onImagesChange]);
 
-            if (validFiles.length > 0) {
-                // Add new files to existing ones
-                const newImagenes = [...imagenes, ...validFiles];
-                setImagenes(newImagenes);
+    const handleImageChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
-                // Generate previews for new files
-                const newPreviews: string[] = [];
-                let loadedCount = 0;
+        const result = await addImages(files);
 
-                validFiles.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        newPreviews.push(reader.result as string);
-                        loadedCount++;
-
-                        // When all new previews are loaded, update state and notify parent
-                        if (loadedCount === validFiles.length) {
-                            const allPreviews = [...imagenesPreview, ...newPreviews];
-                            setImagenesPreview(allPreviews);
-                            onImagesChange?.(allPreviews);
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                // Reset input value to allow selecting the same file again
-                e.target.value = '';
-            }
+        if (result.errors.length > 0) {
+            alert(result.errors.join('\n'));
         }
-    };
 
-    const handleRemoveImage = (index: number) => {
-        const newPreviews = imagenesPreview.filter((_, i) => i !== index);
-        setImagenes(prev => prev.filter((_, i) => i !== index));
-        setImagenesPreview(newPreviews);
-        onImagesChange?.(newPreviews);
-    };
+        // Clear image error if images were added successfully
+        if (result.success && errors.images) {
+            setErrors(prev => ({ ...prev, images: undefined }));
+        }
 
-    const handleSubmit = (e: React.FormEvent) => {
+        // Reset input
+        e.target.value = '';
+    }, [addImages, errors.images]);
+
+    const handleRemoveImage = useCallback((id: string) => {
+        removeImage(id);
+    }, [removeImage]);
+
+    const handleDimensionChange = useCallback((field: 'frente' | 'fondo' | 'altura', value: string) => {
+        // Update the field
+        if (field === 'frente') setFrente(value);
+        else if (field === 'fondo') setFondo(value);
+        else setAltura(value);
+
+        // Clear dimension error when user starts typing
+        if (errors.dimensions) {
+            setErrors(prev => ({ ...prev, dimensions: undefined }));
+        }
+    }, [errors.dimensions]);
+
+    const handleSpecificationsChange = useCallback((value: string) => {
+        setEspecificaciones(value);
+
+        // Clear specifications error when user starts typing
+        if (errors.specifications) {
+            setErrors(prev => ({ ...prev, specifications: undefined }));
+        }
+    }, [errors.specifications]);
+
+    const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
 
-        if (imagenes.length === 0) {
-            alert('Por favor sube al menos una imagen del render');
-            return;
-        }
+        const dimensiones: ProjectDimensions = {
+            frente: parseFloat(frente),
+            fondo: parseFloat(fondo),
+            altura: parseFloat(altura),
+        };
 
-        if (!frente || !fondo || !altura) {
-            alert('Por favor completa todas las dimensiones');
-            return;
-        }
-
-        if (!especificaciones.trim()) {
-            alert('Por favor proporciona las especificaciones del proyecto');
-            return;
-        }
-
-        onSubmit({
-            imagenes,
-            dimensiones: {
-                frente: parseFloat(frente),
-                fondo: parseFloat(fondo),
-                altura: parseFloat(altura),
-            },
+        // Validate form
+        const validation = validateForm({
+            imagenes: images.map(img => img.file),
+            dimensiones,
             especificaciones,
         });
-    };
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+
+            // Show first error in alert
+            const firstError = Object.values(validation.errors)[0];
+            if (firstError) {
+                alert(firstError);
+            }
+            return;
+        }
+
+        // Clear errors and submit
+        setErrors({});
+        onSubmit({
+            imagenes: images.map(img => img.file),
+            dimensiones,
+            especificaciones,
+        });
+    }, [frente, fondo, altura, especificaciones, images, onSubmit]);
 
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -113,26 +130,23 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
             {/* Image Upload */}
             <div className={styles.formGroup}>
                 <label htmlFor="imagen" className={styles.label}>
-                    🖼️ Renders del Proyecto {imagenes.length > 0 && `(${imagenes.length})`}
+                    🖼️ Renders del Proyecto {images.length > 0 && `(${images.length})`}
                 </label>
 
                 {/* Image Previews */}
-                {imagenesPreview.length > 0 && (
+                {previews.length > 0 && (
                     <div className={styles.previewGrid}>
-                        {imagenesPreview.map((preview, index) => (
-                            <div key={index} className={styles.previewItem}>
-                                <img src={preview} alt={`Preview ${index + 1}`} />
+                        {images.map((image) => (
+                            <div key={image.id} className={styles.previewItem}>
+                                <img src={image.preview} alt={`Preview ${image.file.name}`} />
                                 <button
                                     type="button"
-                                    onClick={() => handleRemoveImage(index)}
+                                    onClick={() => handleRemoveImage(image.id)}
                                     className={styles.removeBtn}
                                     disabled={isLoading}
                                     title="Eliminar imagen"
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <line x1="18" y1="6" x2="6" y2="18" strokeWidth="2" strokeLinecap="round" />
-                                        <line x1="6" y1="6" x2="18" y2="18" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
+                                    <XIcon width={16} height={16} />
                                 </button>
                             </div>
                         ))}
@@ -147,21 +161,18 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                         accept="image/*,.pdf"
                         onChange={handleImageChange}
                         className={styles.fileInput}
-                        disabled={isLoading}
+                        disabled={isLoading || isValidating}
                         multiple
                     />
                     <label htmlFor="imagen" className={styles.uploadLabel}>
-                        <div className={imagenes.length > 0 ? styles.uploadPlaceholderSubtle : styles.uploadPlaceholder}>
-                            <svg width={imagenes.length > 0 ? "24" : "48"} height={imagenes.length > 0 ? "24" : "48"} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                <polyline points="17 8 12 3 7 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                <line x1="12" y1="3" x2="12" y2="15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <p>{imagenes.length > 0 ? 'Agregar más imágenes' : 'Haz clic o arrastra imágenes aquí'}</p>
+                        <div className={images.length > 0 ? styles.uploadPlaceholderSubtle : styles.uploadPlaceholder}>
+                            <UploadIcon width={images.length > 0 ? 24 : 48} height={images.length > 0 ? 24 : 48} />
+                            <p>{images.length > 0 ? 'Agregar más imágenes' : 'Haz clic o arrastra imágenes aquí'}</p>
                             <span className="text-muted">PNG, JPG o PDF • Múltiples archivos permitidos</span>
                         </div>
                     </label>
                 </div>
+                {errors.images && <p className={styles.error}>{errors.images}</p>}
             </div>
 
             {/* Dimensions */}
@@ -174,7 +185,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                             type="number"
                             id="frente"
                             value={frente}
-                            onChange={(e) => setFrente(e.target.value)}
+                            onChange={(e) => handleDimensionChange('frente', e.target.value)}
                             placeholder="200"
                             step="0.1"
                             min="0"
@@ -188,7 +199,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                             type="number"
                             id="fondo"
                             value={fondo}
-                            onChange={(e) => setFondo(e.target.value)}
+                            onChange={(e) => handleDimensionChange('fondo', e.target.value)}
                             placeholder="100"
                             step="0.1"
                             min="0"
@@ -202,7 +213,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                             type="number"
                             id="altura"
                             value={altura}
-                            onChange={(e) => setAltura(e.target.value)}
+                            onChange={(e) => handleDimensionChange('altura', e.target.value)}
                             placeholder="250"
                             step="0.1"
                             min="0"
@@ -211,6 +222,7 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                         />
                     </div>
                 </div>
+                {errors.dimensions && <p className={styles.error}>{errors.dimensions}</p>}
             </div>
 
             {/* Specifications */}
@@ -221,22 +233,23 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                 <textarea
                     id="especificaciones"
                     value={especificaciones}
-                    onChange={(e) => setEspecificaciones(e.target.value)}
+                    onChange={(e) => handleSpecificationsChange(e.target.value)}
                     placeholder="Describe los materiales preferidos, acabados, tipo de iluminación, colores, y cualquier otra especificación importante...&#10;&#10;Ejemplo:&#10;- Material: MDF de 15mm&#10;- Acabado: Pintura blanca mate&#10;- Iluminación: LED blanco cálido&#10;- Logo en acrílico de 5mm con corte láser"
                     disabled={isLoading}
                     required
                 />
+                {errors.specifications && <p className={styles.error}>{errors.specifications}</p>}
             </div>
 
             {/* Submit Button */}
             <button
                 type="submit"
                 className={`btn btn-primary ${styles.submitBtn}`}
-                disabled={isLoading}
+                disabled={isLoading || isValidating}
             >
                 {isLoading ? (
                     <>
-                        <div className="spinner" />
+                        <LoaderIcon width={20} height={20} className="spinner" />
                         Generando manual...
                     </>
                 ) : (
@@ -248,6 +261,6 @@ export default function InputForm({ onSubmit, isLoading, onImagesChange }: Input
                     </>
                 )}
             </button>
-        </form>
+        </form >
     );
 }
