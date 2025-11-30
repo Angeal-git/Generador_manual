@@ -84,3 +84,45 @@ export interface ApiResponse {
     manual?: ProductionManual;
     error?: string;
 }
+
+// Database-related types
+export interface CostBreakdown {
+    materiales: MaterialCost[];
+    consumibles: ConsumableCost[];
+    manoDeObra: LaborCost;
+    total: number;
+}
+
+export interface MaterialCost {
+    materialId: string;
+    nombre: string;
+    cantidad: number;
+    unidad: string;
+    precioUnitario: number;
+    subtotal: number;
+}
+
+export interface ConsumableCost {
+    consumableId: string;
+    nombre: string;
+    cantidad: number;
+    unidad: string;
+    precioUnitario: number;
+    subtotal: number;
+}
+
+export interface LaborCost {
+    horasEstimadas: number;
+    costoPorHora: number;
+    subtotal: number;
+}
+
+export interface SavedProject {
+    id: string;
+    nombre: string;
+    descripcion?: string;
+    dimensiones: ProjectDimensions;
+    costoTotal: number;
+    createdAt: string;
+    updatedAt: string;
+}
