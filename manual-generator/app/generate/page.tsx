@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import InputForm from '@/components/InputForm';
 import { ProductionManual, ProjectDimensions } from '@/lib/types';
+import { CostBreakdown as CostBreakdownType } from '@/lib/costCalculator';
 import styles from './page.module.css';
 
 // Lazy load ManualViewer since it's only needed after generation
@@ -22,6 +23,7 @@ export default function GeneratePage() {
     const router = useRouter();
     const [manual, setManual] = useState<ProductionManual | null>(null);
     const [svgFiles, setSvgFiles] = useState<{ [key: string]: string }>({});
+    const [costs, setCosts] = useState<CostBreakdownType | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -34,6 +36,7 @@ export default function GeneratePage() {
         setIsLoading(true);
         setError('');
         setManual(null);
+        setCosts(null);
 
         try {
             const formData = new FormData();
@@ -59,6 +62,7 @@ export default function GeneratePage() {
 
             setManual(result.manual);
             setSvgFiles(result.svgFiles || {});
+            setCosts(result.costs || null);
 
             setTimeout(() => {
                 document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
@@ -75,6 +79,7 @@ export default function GeneratePage() {
     const handleReset = () => {
         setManual(null);
         setSvgFiles({});
+        setCosts(null);
         setError('');
         setImagePreviews([]);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -151,7 +156,7 @@ export default function GeneratePage() {
                 {/* Results */}
                 {manual && !isLoading && (
                     <div id="results" className={styles.resultsSection}>
-                        <ManualViewer manual={manual} svgFiles={svgFiles} />
+                        <ManualViewer manual={manual} svgFiles={svgFiles} costs={costs} />
 
                         <div className={styles.resetSection}>
                             <button onClick={handleReset} className="btn btn-secondary">

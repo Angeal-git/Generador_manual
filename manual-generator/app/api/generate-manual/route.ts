@@ -210,12 +210,50 @@ export async function POST(request: NextRequest) {
             // Continue without nesting if it fails
         }
 
+        // ===== CALCULAR COSTOS DE MATERIALES =====
+        let costsBreakdown = null;
+        try {
+            const { calculateCostsFromManual, generateCostSummary } = await import('@/lib/materialExtractor');
+
+            console.log('Calculando costos de materiales...');
+            const { costs, suggestions } = calculateCostsFromManual(manual);
+
+            if (costs && costs.materiales.length > 0) {
+                console.log(`Costos calculados para ${costs.materiales.length} materiales`);
+
+                if (suggestions.length > 0) {
+                    console.log(`Sugerencias de materiales: ${suggestions.length}`);
+                    suggestions.forEach(sug => {
+                        console.log(`  - ${sug.original} → ${sug.suggested} (${sug.reason})`);
+                    });
+                }
+
+                // Generar resumen de costos con sugerencias
+                const costSummary = generateCostSummary(costs.materiales, costs.total, suggestions);
+
+                // Agregar resumen a las notas generales
+                if (!manual.notasGenerales) {
+                    manual.notasGenerales = [];
+                }
+                manual.notasGenerales.push(costSummary);
+
+                costsBreakdown = costs;
+                console.log(`Costo total calculado: $${costs.total.toFixed(2)} MXN`);
+            } else {
+                console.warn('No se pudieron calcular costos - materiales no encontrados en catálogo');
+            }
+        } catch (costError) {
+            console.error('Error al calcular costos:', costError);
+            // Continuar sin costos si falla
+        }
+
         // Store SVGs temporarily (in production, use a proper storage solution)
         // For now, we'll send them in the response
         const response = {
             success: true,
             manual,
             svgFiles, // Include SVG content in response
+            costs: costsBreakdown, // Include cost breakdown
         };
 
         return NextResponse.json(response);

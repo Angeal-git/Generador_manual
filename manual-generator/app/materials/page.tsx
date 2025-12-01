@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import { MATERIALS_CATALOG, getMaterialType } from '@/lib/materialsCatalog';
 
 interface Material {
     id: string;
@@ -114,13 +115,24 @@ export default function MaterialsPage() {
         setEditingMaterial(null);
         setFormData({
             nombre: '',
-            tipo: 'Madera',
+            tipo: '',
             unidad: 'm²',
             precioPorUnidad: '',
             proveedor: '',
             especificaciones: '',
             enStock: true
         });
+    };
+
+    const handleMaterialSelect = (materialName: string) => {
+        if (materialName) {
+            const tipo = getMaterialType(materialName);
+            setFormData({
+                ...formData,
+                nombre: materialName,
+                tipo: tipo
+            });
+        }
     };
 
     const getBadgeClass = (tipo: string) => {
@@ -253,30 +265,38 @@ export default function MaterialsPage() {
                         </div>
                         <form className={styles.form} onSubmit={handleSubmit}>
                             <div className={styles.formGroup}>
-                                <label>Nombre *</label>
-                                <input
-                                    type="text"
+                                <label>Material *</label>
+                                <select
                                     value={formData.nombre}
-                                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                    onChange={(e) => handleMaterialSelect(e.target.value)}
                                     required
-                                    placeholder="ej. MDF 15mm"
-                                />
+                                    className={styles.materialSelect}
+                                >
+                                    <option value="">-- Selecciona un material --</option>
+                                    {Object.entries(MATERIALS_CATALOG).map(([categoria, materiales]) => (
+                                        <optgroup key={categoria} label={categoria}>
+                                            {materiales.map((material) => (
+                                                <option key={material} value={material}>
+                                                    {material}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Tipo *</label>
-                                <select
+                                <label>Tipo * (Auto-asignado)</label>
+                                <input
+                                    type="text"
                                     value={formData.tipo}
-                                    onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                                    required
-                                >
-                                    <option value="Madera">Madera</option>
-                                    <option value="Metal">Metal</option>
-                                    <option value="Iluminacion">Iluminación</option>
-                                    <option value="Acabados">Acabados</option>
-                                    <option value="Vidrio">Vidrio</option>
-                                    <option value="Otro">Otro</option>
-                                </select>
+                                    readOnly
+                                    className={styles.readOnlyInput}
+                                    placeholder="Se asigna automáticamente"
+                                />
+                                <small className={styles.helpText}>
+                                    El tipo se asigna automáticamente según el material seleccionado
+                                </small>
                             </div>
 
                             <div className={styles.formGroup}>

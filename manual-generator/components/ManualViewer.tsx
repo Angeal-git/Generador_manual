@@ -2,16 +2,19 @@
 
 import React from 'react';
 import { ProductionManual } from '@/lib/types';
+import { CostBreakdown as CostBreakdownType } from '@/lib/costCalculator';
 import ComponentCard from './ComponentCard';
 import DownloadButtons from './DownloadButtons';
+import CostBreakdown from './CostBreakdown';
 import styles from './ManualViewer.module.css';
 
 interface ManualViewerProps {
     manual: ProductionManual;
     svgFiles: { [key: string]: string };
+    costs?: CostBreakdownType | null;
 }
 
-export default function ManualViewer({ manual, svgFiles }: ManualViewerProps) {
+export default function ManualViewer({ manual, svgFiles, costs }: ManualViewerProps) {
     return (
         <div className={styles.viewer}>
             {/* Header */}
@@ -55,6 +58,9 @@ export default function ManualViewer({ manual, svgFiles }: ManualViewerProps) {
                     <span>📅 {manual.fechaGeneracion}</span>
                 </div>
             </div>
+
+            {/* Cost Breakdown */}
+            {costs && <CostBreakdown costs={costs} />}
 
             {/* Components */}
             <div className={styles.section}>
