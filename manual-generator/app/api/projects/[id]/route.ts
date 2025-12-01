@@ -8,19 +8,7 @@ export async function GET(
 ) {
     try {
         const project = await prisma.project.findUnique({
-            where: { id: params.id },
-            include: {
-                componentes: {
-                    include: {
-                        material: true
-                    }
-                },
-                consumibles: {
-                    include: {
-                        consumable: true
-                    }
-                }
-            }
+            where: { id: params.id }
         });
 
         if (!project) {

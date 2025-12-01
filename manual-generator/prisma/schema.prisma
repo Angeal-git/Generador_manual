@@ -34,27 +34,6 @@ model Material {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   
-  // Relaciones
-  componentesUsados ProjectComponent[]
-  
-  @@index([tipo])
-}
-
-// Consumable: Tornillos, pegamento, pintura, etc.
-model Consumable {
-  id                String             @id @default(cuid())
-  nombre            String             // e.g., "Tornillo 3x20mm"
-  tipo              ConsumableType
-  unidad            String             // e.g., "pieza", "litro", "kg"
-  precioPorUnidad   Float
-  cantidadMinima    Float?             // Para alertas de stock
-  especificaciones  String?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  
-  // Relaciones
-  proyectosUsados   ProjectConsumable[]
-  
   @@index([tipo])
 }
 
@@ -86,54 +65,6 @@ model Project {
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   
-  // Relaciones
-  componentes           ProjectComponent[]
-  consumibles           ProjectConsumable[]
-  
   @@index([createdAt])
 }
 
-// ProjectComponent: Componentes usados en un proyecto
-model ProjectComponent {
-  id            String   @id @default(cuid())
-  projectId     String
-  materialId    String
-  
-  // Datos del componente
-  nombre        String
-  cantidad      Float    // Cantidad de material usado
-  unidad        String
-  costo         Float    // Costo calculado
-  
-  // Relaciones
-  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  material      Material @relation(fields: [materialId], references: [id])
-  
-  @@index([projectId])
-  @@index([materialId])
-}
-
-// ProjectConsumable: Consumibles usados en un proyecto
-model ProjectConsumable {
-  id            String     @id @default(cuid())
-  projectId     String
-  consumableId  String
-  
-  cantidad      Float
-  costo         Float
-  
-  // Relaciones
-  project       Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  consumable    Consumable @relation(fields: [consumableId], references: [id])
-  
-  @@index([projectId])
-  @@index([consumableId])
-}
-
-enum ConsumableType {
-  ILUMINACION
-  PINTURA
-  ADHESIVO
-  TORNILLERIA
-  OTRO
-}
