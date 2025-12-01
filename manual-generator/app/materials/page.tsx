@@ -11,6 +11,9 @@ interface Material {
     tipo: string;
     unidad: string;
     precioPorUnidad: number;
+    createdAt?: string;
+    updatedAt?: string;
+    stockCantidad?: number;
     // Campos de venta
     unidadVenta?: string;
     cantidadPorUnidadVenta?: number;
@@ -41,6 +44,7 @@ export default function MaterialsPage() {
 
         proveedor: '',
         especificaciones: '',
+        stockCantidad: '',
         enStock: true
     });
 
@@ -93,7 +97,8 @@ export default function MaterialsPage() {
                     ...formData,
                     precioPorUnidad: parseFloat(formData.precioPorUnidad),
                     cantidadPorUnidadVenta: parseFloat(formData.cantidadPorUnidadVenta),
-                    precioPorUnidadVenta: parseFloat(formData.precioPorUnidadVenta)
+                    precioPorUnidadVenta: parseFloat(formData.precioPorUnidadVenta),
+                    stockCantidad: formData.stockCantidad !== undefined && formData.stockCantidad !== '' ? parseFloat(formData.stockCantidad) : null
                 })
             });
 
@@ -138,6 +143,7 @@ export default function MaterialsPage() {
 
             proveedor: material.proveedor || '',
             especificaciones: material.especificaciones || '',
+            stockCantidad: material.stockCantidad?.toString() || '',
             enStock: material.enStock
         });
         setShowModal(true);
@@ -156,6 +162,7 @@ export default function MaterialsPage() {
             precioPorUnidadVenta: '',
             proveedor: '',
             especificaciones: '',
+            stockCantidad: '',
             enStock: true
         });
     };
@@ -173,6 +180,7 @@ export default function MaterialsPage() {
                 unidad: info ? info.unidadMedida : prev.unidad,
                 unidadVenta: info ? info.unidadVenta : prev.unidadVenta,
                 cantidadPorUnidadVenta: info ? info.cantidadPorUnidad.toString() : prev.cantidadPorUnidadVenta,
+                // stockCantidad no es parte del catálogo por defecto
                 precioPorUnidadVenta: info ? info.precioPorUnidad.toString() : prev.precioPorUnidadVenta
             }));
         }
@@ -187,6 +195,9 @@ export default function MaterialsPage() {
         if (tipoLower.includes('vidrio') || tipoLower.includes('cristal')) return styles.badgeVidrio;
         return styles.badgeOtro;
     };
+
+    // Si el material seleccionado existe en el catálogo y trae precio, bloquear edición del precio
+    const isPrecioReadOnly = !!(formData.nombre && MATERIALS_INFO[formData.nombre]?.precioPorUnidad);
 
     return (
         <main className={styles.materialsPage}>
@@ -247,6 +258,8 @@ export default function MaterialsPage() {
                                         <th>Categoría</th>
                                         <th>Precio Venta</th>
                                         <th>Precio Base (Cálculo)</th>
+                                        <th>Cantidad</th>
+                                        <th>Guardado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -277,6 +290,24 @@ export default function MaterialsPage() {
                                                 <div className={styles.basePrice}>
                                                     ${material.precioPorUnidad.toFixed(2)} / {material.unidad}
                                                 </div>
+                                            </td>
+                                            <td>
+                                                {typeof material.stockCantidad === 'number' ? (
+                                                    <div className={styles.quantity}>
+                                                        {material.stockCantidad}
+                                                    </div>
+                                                ) : (
+                                                    <span className={styles.textMuted}>-</span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                {material.updatedAt ? (
+                                                    <div className={styles.savedAt}>
+                                                        {new Date(material.updatedAt).toLocaleString()}
+                                                    </div>
+                                                ) : (
+                                                    <span className={styles.textMuted}>-</span>
+                                                )}
                                             </td>
                                             <td>
                                                 <div className={styles.actions}>
@@ -347,6 +378,7 @@ export default function MaterialsPage() {
                                         value={formData.unidadVenta}
                                         onChange={(e) => setFormData({ ...formData, unidadVenta: e.target.value })}
                                         required
+                                        disabled
                                     >
                                         <option value="pieza">Pieza</option>
                                         <option value="placa">Placa / Hoja</option>
@@ -367,37 +399,29 @@ export default function MaterialsPage() {
                                         onChange={(e) => setFormData({ ...formData, precioPorUnidadVenta: e.target.value })}
                                         required
                                         placeholder="0.00"
+                                        readOnly={isPrecioReadOnly}
+                                        className={isPrecioReadOnly ? styles.readOnlyInput : undefined}
                                     />
+                                    {isPrecioReadOnly && (
+                                        <small className={styles.helpText}>Precio provisto por el catálogo (no editable)</small>
+                                    )}
                                 </div>
                             </div>
 
                             <div className={styles.row}>
                                 <div className={styles.formGroup}>
-                                    <label>Contenido ({formData.unidad}) *</label>
+                                    <label>Cantidad</label>
                                     <input
                                         type="number"
-                                        step="0.0001"
-                                        value={formData.cantidadPorUnidadVenta}
-                                        onChange={(e) => setFormData({ ...formData, cantidadPorUnidadVenta: e.target.value })}
-                                        required
+                                        step="1"
+                                        min="0"
+                                        value={formData.stockCantidad}
+                                        onChange={(e) => setFormData({ ...formData, stockCantidad: e.target.value })}
+                                        placeholder="Cantidad en stock (unidades)"
                                     />
-                                    <small className={styles.helpText}>
-                                        Ej: 2.97 m² por placa
-                                    </small>
                                 </div>
 
-                                <div className={styles.formGroup}>
-                                    <label>Precio Base (Auto)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.precioPorUnidad}
-                                        readOnly
-                                        className={styles.readOnlyInput}
-                                    />
-                                    <small className={styles.helpText}>
-                                        Costo por {formData.unidad}
-                                    </small>
-                                </div>
+                                {/* Precio Base eliminado según petición del usuario */}
                             </div>
 
                             <div className={styles.formGroup}>
@@ -410,15 +434,7 @@ export default function MaterialsPage() {
                                 />
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Especificaciones</label>
-                                <textarea
-                                    value={formData.especificaciones}
-                                    onChange={(e) => setFormData({ ...formData, especificaciones: e.target.value })}
-                                    placeholder="Detalles adicionales del material..."
-                                    rows={3}
-                                />
-                            </div>
+                            {/* Especificaciones eliminadas según petición del usuario */}
 
                             <div className={styles.formActions}>
                                 <button type="button" className={styles.cancelButton} onClick={handleCloseModal}>

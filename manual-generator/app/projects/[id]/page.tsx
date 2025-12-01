@@ -97,6 +97,20 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsProps) {
                 </button>
             </header>
 
+            {/* Imágenes guardadas (si existen) */}
+            {Array.isArray(project.imageUrls) && project.imageUrls.length > 0 && (
+                <div className={styles.imagesPreviewSection}>
+                    <h3 className={styles.imagesSectionTitle}>📸 Imágenes del Proyecto</h3>
+                    <div className={styles.imagesGrid}>
+                        {project.imageUrls.map((src: string, idx: number) => (
+                            <div key={idx} className={styles.imagePreviewItem}>
+                                <img src={src} alt={`Imagen ${idx + 1}`} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className={styles.content}>
                 <ManualViewer
                     manual={project.manualData}

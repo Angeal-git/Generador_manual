@@ -247,6 +247,69 @@
     box-shadow: var(--shadow-md);
 }
 
+/* Images preview for project detail */
+.imagesPreviewSection {
+    max-width: 1200px;
+    margin: 0 auto 1.5rem auto;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.imagesSectionTitle {
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: 1.25rem;
+    color: var(--color-text-primary);
+    text-align: center;
+    display: block;
+    width: 100%;
+}
+
+.imagesGrid {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.imagePreviewItem {
+    width: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--color-bg-primary);
+    transition: transform var(--transition-base);
+    padding: 0.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.imagePreviewItem:hover {
+    transform: scale(1.02);
+}
+
+.imagePreviewItem img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+/* Enforce thumbnail sizing to avoid full-screen images leaking into layout */
+.imagesPreviewSection .imagesGrid .imagePreviewItem img {
+    width: 100% !important;
+    max-width: 300px !important;
+    height: 180px !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: var(--spacing-md);

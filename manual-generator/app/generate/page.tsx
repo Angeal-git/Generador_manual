@@ -77,7 +77,10 @@ export default function GeneratePage() {
             });
 
             setTimeout(() => {
-                document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+                // Después de generar el manual, regresar al top de la página
+                if (typeof window !== 'undefined') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             }, 100);
 
         } catch (err: any) {
