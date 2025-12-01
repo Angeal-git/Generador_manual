@@ -26,6 +26,9 @@ export default function LandingPage() {
                             <Link href="/materials" className={styles.navLink}>
                                 Materiales
                             </Link>
+                            <Link href="/projects" className={styles.navLink}>
+                                Proyectos
+                            </Link>
                             <Link href="/generate" className="btn btn-primary">
                                 Comenzar
                             </Link>

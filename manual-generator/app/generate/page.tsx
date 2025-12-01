@@ -27,6 +27,11 @@ export default function GeneratePage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [projectName, setProjectName] = useState('');
+    const [projectDescription, setProjectDescription] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState<any>(null);
 
     const handleSubmit = async (data: {
         imagenes: File[];
@@ -64,6 +69,13 @@ export default function GeneratePage() {
             setSvgFiles(result.svgFiles || {});
             setCosts(result.costs || null);
 
+            // Store form data for saving later
+            setFormData({
+                imagenes: data.imagenes,
+                dimensiones: data.dimensiones,
+                especificaciones: data.especificaciones
+            });
+
             setTimeout(() => {
                 document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
@@ -82,7 +94,63 @@ export default function GeneratePage() {
         setCosts(null);
         setError('');
         setImagePreviews([]);
+        setFormData(null);
+        setProjectName('');
+        setProjectDescription('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleSaveProject = async () => {
+        if (!projectName.trim()) {
+            alert('Por favor ingresa un nombre para el proyecto');
+            return;
+        }
+
+        setSaving(true);
+        try {
+            // Convert images to base64
+            const imageUrls = await Promise.all(
+                formData.imagenes.map(async (file: File) => {
+                    return new Promise<string>((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.readAsDataURL(file);
+                    });
+                })
+            );
+
+            const response = await fetch('/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: projectName,
+                    descripcion: projectDescription,
+                    dimensiones: formData.dimensiones,
+                    especificaciones: formData.especificaciones,
+                    manualData: manual,
+                    svgFiles: svgFiles,
+                    imageUrls: imageUrls,
+                    costoMateriales: costs?.total || 0,
+                    costoConsumibles: 0,
+                    costoManoDeObra: 0,
+                    costoTotal: costs?.total || 0
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setShowSaveModal(false);
+                alert('¡Proyecto guardado exitosamente!');
+                router.push('/projects');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (err: any) {
+            alert('Error al guardar: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -159,6 +227,9 @@ export default function GeneratePage() {
                         <ManualViewer manual={manual} svgFiles={svgFiles} costs={costs} />
 
                         <div className={styles.resetSection}>
+                            <button onClick={() => setShowSaveModal(true)} className="btn btn-primary">
+                                💾 Guardar Proyecto
+                            </button>
                             <button onClick={handleReset} className="btn btn-secondary">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <polyline points="1 4 1 10 7 10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -178,6 +249,60 @@ export default function GeneratePage() {
                     </p>
                 </footer>
             </div>
+
+            {/* Save Project Modal */}
+            {showSaveModal && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <h2>💾 Guardar Proyecto</h2>
+                        <p className={styles.modalDescription}>
+                            Guarda este manual para acceder a él más tarde
+                        </p>
+
+                        <div className={styles.formGroup}>
+                            <label htmlFor="projectName">Nombre del Proyecto *</label>
+                            <input
+                                id="projectName"
+                                type="text"
+                                value={projectName}
+                                onChange={(e) => setProjectName(e.target.value)}
+                                placeholder="Ej: Stand Expo 2024"
+                                className={styles.input}
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label htmlFor="projectDescription">Descripción (opcional)</label>
+                            <textarea
+                                id="projectDescription"
+                                value={projectDescription}
+                                onChange={(e) => setProjectDescription(e.target.value)}
+                                placeholder="Agrega notas o detalles adicionales..."
+                                className={styles.textarea}
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className={styles.modalActions}>
+                            <button
+                                onClick={() => setShowSaveModal(false)}
+                                className="btn btn-secondary"
+                                disabled={saving}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleSaveProject}
+                                className="btn btn-primary"
+                                disabled={saving}
+                            >
+                                {saving ? 'Guardando...' : 'Guardar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
