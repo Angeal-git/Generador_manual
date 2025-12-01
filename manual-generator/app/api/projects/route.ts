@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
             costoMateriales,
             costoConsumibles,
             costoManoDeObra,
-            costoTotal
+            costoTotal,
+            costsData // Nuevo campo
         } = body;
 
         if (!nombre || !dimensiones || !manualData) {
@@ -68,7 +69,8 @@ export async function POST(request: NextRequest) {
                 costoMateriales: costoMateriales || 0,
                 costoConsumibles: costoConsumibles || 0,
                 costoManoDeObra: costoManoDeObra || 0,
-                costoTotal: costoTotal || 0
+                costoTotal: costoTotal || 0,
+                costsData: costsData || null
             }
         });
 

@@ -60,6 +60,7 @@ model Project {
   // Manual generado (JSON)
   manualData            Json                // ProductionManual completo
   svgFiles              Json?               // { [componentId]: svgString }
+  costsData             Json?               // Detalle completo de costos (CostBreakdown)
   
   // Imágenes originales
   imageUrls             String[]            // URLs de las imágenes subidas

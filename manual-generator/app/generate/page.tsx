@@ -133,7 +133,8 @@ export default function GeneratePage() {
                     costoMateriales: costs?.total || 0,
                     costoConsumibles: 0,
                     costoManoDeObra: 0,
-                    costoTotal: costs?.total || 0
+                    costoTotal: costs?.total || 0,
+                    costsData: costs // Enviar objeto completo de costos
                 })
             });
 
@@ -224,12 +225,15 @@ export default function GeneratePage() {
                 {/* Results */}
                 {manual && !isLoading && (
                     <div id="results" className={styles.resultsSection}>
-                        <ManualViewer manual={manual} svgFiles={svgFiles} costs={costs} />
-
-                        <div className={styles.resetSection}>
+                        <div className={styles.resultsHeader}>
                             <button onClick={() => setShowSaveModal(true)} className="btn btn-primary">
                                 💾 Guardar Proyecto
                             </button>
+                        </div>
+
+                        <ManualViewer manual={manual} svgFiles={svgFiles} costs={costs} />
+
+                        <div className={styles.resetSection}>
                             <button onClick={handleReset} className="btn btn-secondary">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <polyline points="1 4 1 10 7 10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

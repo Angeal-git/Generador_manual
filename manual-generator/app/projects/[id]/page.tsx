@@ -101,7 +101,7 @@ export default function ProjectDetailsPage({ params }: ProjectDetailsProps) {
                 <ManualViewer
                     manual={project.manualData}
                     svgFiles={project.svgFiles || {}}
-                    costs={null} // Los costos ya están en el manual
+                    costs={project.costsData || null} // Pasar datos de costos guardados
                 />
             </div>
         </div>
