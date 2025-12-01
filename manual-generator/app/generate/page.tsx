@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import InputForm from '@/components/InputForm';
 import { ProductionManual, ProjectDimensions } from '@/lib/types';
 import { CostBreakdown as CostBreakdownType } from '@/lib/costCalculator';
+import LandingPage from '@/components/LandingPage';
 import styles from './page.module.css';
 
 // Lazy load ManualViewer since it's only needed after generation

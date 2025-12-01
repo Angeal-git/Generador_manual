@@ -32,12 +32,18 @@ Plataforma web que utiliza inteligencia artificial (Gemini 2.0 Flash) para anali
    npm install
    ```
 
-3. **Configura la API Key:**
-   
-   La API key ya está configurada en `.env.local`. Si necesitas cambiarla:
+3. **Configura la API Key (y manténla privada):**
+
+   La aplicación lee la clave desde variables de entorno. Crea un archivo local llamado `.env.local` en la raíz del proyecto (este archivo ya está ignorado por Git) y añade tu clave:
+
+   ```bash
+   # .env.local (NO subir este archivo a Git)
+   GEMINI_API_KEY=tu_api_key_real_aqui
    ```
-   GEMINI_API_KEY=tu_api_key_aqui
-   ```
+
+   - No subas nunca `.env.local` ni claves secretas al repositorio. Este repositorio ya incluye `.gitignore` que ignora `.env` y `.env*.local`.
+   - Para despliegues en servicios como Vercel, Netlify o GitHub Actions, configura esta variable en el panel de configuración/Secrets del servicio (por ejemplo, "Environment Variables" en Vercel o "Secrets" en GitHub).
+   - Si por error ya has subido una clave al repositorio remoto, gírala/rota la clave en la plataforma correspondiente y reemplázala por una nueva.
 
 4. **Inicia el servidor de desarrollo:**
    ```bash
