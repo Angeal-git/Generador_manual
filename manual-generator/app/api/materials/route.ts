@@ -26,7 +26,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { nombre, tipo, unidad, precioPorUnidad, proveedor, especificaciones, enStock } = body;
+        const {
+            nombre,
+            tipo,
+            unidad,
+            precioPorUnidad,
+            unidadVenta,
+            cantidadPorUnidadVenta,
+            precioPorUnidadVenta,
+            ancho,
+            alto,
+            stockCantidad,
+            proveedor,
+            especificaciones,
+            enStock
+        } = body;
 
         if (!nombre || !tipo || !unidad || precioPorUnidad === undefined) {
             return NextResponse.json(
@@ -41,6 +55,12 @@ export async function POST(request: NextRequest) {
                 tipo,
                 unidad,
                 precioPorUnidad: parseFloat(precioPorUnidad),
+                unidadVenta: unidadVenta || null,
+                cantidadPorUnidadVenta: cantidadPorUnidadVenta || null,
+                precioPorUnidadVenta: precioPorUnidadVenta || null,
+                ancho: ancho || null,
+                alto: alto || null,
+                stockCantidad: stockCantidad || null,
                 proveedor: proveedor || null,
                 especificaciones: especificaciones || null,
                 enStock: enStock !== undefined ? enStock : true

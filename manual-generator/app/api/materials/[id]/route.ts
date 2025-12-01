@@ -35,7 +35,21 @@ export async function PUT(
 ) {
     try {
         const body = await request.json();
-        const { nombre, tipo, unidad, precioPorUnidad, proveedor, especificaciones, enStock } = body;
+        const {
+            nombre,
+            tipo,
+            unidad,
+            precioPorUnidad,
+            unidadVenta,
+            cantidadPorUnidadVenta,
+            precioPorUnidadVenta,
+            ancho,
+            alto,
+            stockCantidad,
+            proveedor,
+            especificaciones,
+            enStock
+        } = body;
 
         const material = await prisma.material.update({
             where: { id: params.id },
@@ -44,6 +58,12 @@ export async function PUT(
                 ...(tipo && { tipo }),
                 ...(unidad && { unidad }),
                 ...(precioPorUnidad !== undefined && { precioPorUnidad: parseFloat(precioPorUnidad) }),
+                ...(unidadVenta !== undefined && { unidadVenta }),
+                ...(cantidadPorUnidadVenta !== undefined && { cantidadPorUnidadVenta }),
+                ...(precioPorUnidadVenta !== undefined && { precioPorUnidadVenta }),
+                ...(ancho !== undefined && { ancho }),
+                ...(alto !== undefined && { alto }),
+                ...(stockCantidad !== undefined && { stockCantidad }),
                 ...(proveedor !== undefined && { proveedor }),
                 ...(especificaciones !== undefined && { especificaciones }),
                 ...(enStock !== undefined && { enStock })

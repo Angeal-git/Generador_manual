@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
-import { MATERIALS_CATALOG, getMaterialType } from '@/lib/materialsCatalog';
+import { MATERIALS_CATALOG, MATERIALS_INFO, getMaterialType, MaterialInfo } from '@/lib/materialsCatalog';
 
 interface Material {
     id: string;
@@ -11,6 +11,11 @@ interface Material {
     tipo: string;
     unidad: string;
     precioPorUnidad: number;
+    // Campos de venta
+    unidadVenta?: string;
+    cantidadPorUnidadVenta?: number;
+    precioPorUnidadVenta?: number;
+
     proveedor?: string;
     especificaciones?: string;
     enStock: boolean;
@@ -22,11 +27,18 @@ export default function MaterialsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+
     const [formData, setFormData] = useState({
         nombre: '',
         tipo: 'Madera',
         unidad: 'm²',
-        precioPorUnidad: '',
+        precioPorUnidad: '', // Precio base calculado
+
+        // Nuevos campos de venta
+        unidadVenta: 'placa',
+        cantidadPorUnidadVenta: '2.9768',
+        precioPorUnidadVenta: '', // Precio que ingresa el usuario
+
         proveedor: '',
         especificaciones: '',
         enStock: true
@@ -35,6 +47,20 @@ export default function MaterialsPage() {
     useEffect(() => {
         fetchMaterials();
     }, []);
+
+    // Calcular precio base cuando cambian los datos de venta
+    useEffect(() => {
+        const precioVenta = parseFloat(formData.precioPorUnidadVenta);
+        const cantidad = parseFloat(formData.cantidadPorUnidadVenta);
+
+        if (!isNaN(precioVenta) && !isNaN(cantidad) && cantidad > 0) {
+            const precioBase = precioVenta / cantidad;
+            setFormData(prev => ({
+                ...prev,
+                precioPorUnidad: precioBase.toFixed(2)
+            }));
+        }
+    }, [formData.precioPorUnidadVenta, formData.cantidadPorUnidadVenta]);
 
     const fetchMaterials = async () => {
         try {
@@ -65,7 +91,9 @@ export default function MaterialsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    precioPorUnidad: parseFloat(formData.precioPorUnidad)
+                    precioPorUnidad: parseFloat(formData.precioPorUnidad),
+                    cantidadPorUnidadVenta: parseFloat(formData.cantidadPorUnidadVenta),
+                    precioPorUnidadVenta: parseFloat(formData.precioPorUnidadVenta)
                 })
             });
 
@@ -103,6 +131,11 @@ export default function MaterialsPage() {
             tipo: material.tipo,
             unidad: material.unidad,
             precioPorUnidad: material.precioPorUnidad.toString(),
+
+            unidadVenta: material.unidadVenta || 'pieza',
+            cantidadPorUnidadVenta: material.cantidadPorUnidadVenta?.toString() || '1',
+            precioPorUnidadVenta: material.precioPorUnidadVenta?.toString() || material.precioPorUnidad.toString(),
+
             proveedor: material.proveedor || '',
             especificaciones: material.especificaciones || '',
             enStock: material.enStock
@@ -118,6 +151,9 @@ export default function MaterialsPage() {
             tipo: '',
             unidad: 'm²',
             precioPorUnidad: '',
+            unidadVenta: 'placa',
+            cantidadPorUnidadVenta: '1',
+            precioPorUnidadVenta: '',
             proveedor: '',
             especificaciones: '',
             enStock: true
@@ -127,11 +163,18 @@ export default function MaterialsPage() {
     const handleMaterialSelect = (materialName: string) => {
         if (materialName) {
             const tipo = getMaterialType(materialName);
-            setFormData({
-                ...formData,
+            const info = MATERIALS_INFO[materialName];
+
+            setFormData(prev => ({
+                ...prev,
                 nombre: materialName,
-                tipo: tipo
-            });
+                tipo: tipo,
+                // Auto-fill si existe info
+                unidad: info ? info.unidadMedida : prev.unidad,
+                unidadVenta: info ? info.unidadVenta : prev.unidadVenta,
+                cantidadPorUnidadVenta: info ? info.cantidadPorUnidad.toString() : prev.cantidadPorUnidadVenta,
+                precioPorUnidadVenta: info ? info.precioPorUnidad.toString() : prev.precioPorUnidadVenta
+            }));
         }
     };
 
@@ -160,7 +203,7 @@ export default function MaterialsPage() {
 
                 <div className={styles.header}>
                     <h1>Base de Datos de Materiales</h1>
-                    <p>Gestiona los materiales disponibles para que la IA los considere en las sugerencias de fabricación.</p>
+                    <p>Gestiona los materiales disponibles y sus precios de venta.</p>
                 </div>
 
                 <div className={styles.materialsCard}>
@@ -202,8 +245,8 @@ export default function MaterialsPage() {
                                     <tr>
                                         <th>Material</th>
                                         <th>Categoría</th>
-                                        <th>Precio</th>
-                                        <th>Proveedor</th>
+                                        <th>Precio Venta</th>
+                                        <th>Precio Base (Cálculo)</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -221,8 +264,20 @@ export default function MaterialsPage() {
                                                     {material.tipo}
                                                 </span>
                                             </td>
-                                            <td>${material.precioPorUnidad.toFixed(2)} / {material.unidad}</td>
-                                            <td>{material.proveedor || '-'}</td>
+                                            <td>
+                                                {material.precioPorUnidadVenta ? (
+                                                    <div className={styles.priceTag}>
+                                                        ${material.precioPorUnidadVenta.toFixed(2)} / {material.unidadVenta}
+                                                    </div>
+                                                ) : (
+                                                    <span className={styles.textMuted}>-</span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <div className={styles.basePrice}>
+                                                    ${material.precioPorUnidad.toFixed(2)} / {material.unidad}
+                                                </div>
+                                            </td>
                                             <td>
                                                 <div className={styles.actions}>
                                                     <button
@@ -285,45 +340,64 @@ export default function MaterialsPage() {
                                 </select>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Tipo * (Auto-asignado)</label>
-                                <input
-                                    type="text"
-                                    value={formData.tipo}
-                                    readOnly
-                                    className={styles.readOnlyInput}
-                                    placeholder="Se asigna automáticamente"
-                                />
-                                <small className={styles.helpText}>
-                                    El tipo se asigna automáticamente según el material seleccionado
-                                </small>
+                            <div className={styles.row}>
+                                <div className={styles.formGroup}>
+                                    <label>Unidad de Venta *</label>
+                                    <select
+                                        value={formData.unidadVenta}
+                                        onChange={(e) => setFormData({ ...formData, unidadVenta: e.target.value })}
+                                        required
+                                    >
+                                        <option value="pieza">Pieza</option>
+                                        <option value="placa">Placa / Hoja</option>
+                                        <option value="barra">Barra / Perfil</option>
+                                        <option value="rollo">Rollo</option>
+                                        <option value="caja">Caja</option>
+                                        <option value="litro">Litro</option>
+                                        <option value="cubeta">Cubeta</option>
+                                    </select>
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label>Precio por {formData.unidadVenta} *</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.precioPorUnidadVenta}
+                                        onChange={(e) => setFormData({ ...formData, precioPorUnidadVenta: e.target.value })}
+                                        required
+                                        placeholder="0.00"
+                                    />
+                                </div>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Unidad *</label>
-                                <select
-                                    value={formData.unidad}
-                                    onChange={(e) => setFormData({ ...formData, unidad: e.target.value })}
-                                    required
-                                >
-                                    <option value="m²">m² (metro cuadrado)</option>
-                                    <option value="ml">ml (metro lineal)</option>
-                                    <option value="pieza">pieza</option>
-                                    <option value="kg">kg (kilogramo)</option>
-                                    <option value="litro">litro</option>
-                                </select>
-                            </div>
+                            <div className={styles.row}>
+                                <div className={styles.formGroup}>
+                                    <label>Contenido ({formData.unidad}) *</label>
+                                    <input
+                                        type="number"
+                                        step="0.0001"
+                                        value={formData.cantidadPorUnidadVenta}
+                                        onChange={(e) => setFormData({ ...formData, cantidadPorUnidadVenta: e.target.value })}
+                                        required
+                                    />
+                                    <small className={styles.helpText}>
+                                        Ej: 2.97 m² por placa
+                                    </small>
+                                </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Precio por Unidad *</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.precioPorUnidad}
-                                    onChange={(e) => setFormData({ ...formData, precioPorUnidad: e.target.value })}
-                                    required
-                                    placeholder="0.00"
-                                />
+                                <div className={styles.formGroup}>
+                                    <label>Precio Base (Auto)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.precioPorUnidad}
+                                        readOnly
+                                        className={styles.readOnlyInput}
+                                    />
+                                    <small className={styles.helpText}>
+                                        Costo por {formData.unidad}
+                                    </small>
+                                </div>
                             </div>
 
                             <div className={styles.formGroup}>

@@ -16,7 +16,18 @@ model Material {
   nombre            String             // e.g., "MDF 15mm"
   tipo              String             // e.g., "Madera", "Metal", "Plástico"
   unidad            String             // e.g., "m²", "metro lineal", "pieza"
-  precioPorUnidad   Float              // Precio en moneda local
+  precioPorUnidad   Float              // Precio base calculado (por m², ml, etc.)
+  
+  // Datos de Venta (Nuevo)
+  unidadVenta             String?      // e.g., "placa", "barra", "rollo"
+  cantidadPorUnidadVenta  Float?       // e.g., 2.97 (m² por placa)
+  precioPorUnidadVenta    Float?       // Precio de venta real (por placa, barra, etc.)
+
+  // Dimensiones y Stock (Nuevo)
+  ancho                   Float?       // Ancho en metros
+  alto                    Float?       // Alto o Largo en metros
+  stockCantidad           Float?       // Cantidad en unidades de venta (e.g., 2 placas)
+
   proveedor         String?
   especificaciones  String?
   enStock           Boolean            @default(true)
